@@ -50,6 +50,11 @@ DB_NAME_DEV=db_lms
 Buat string acak, misalnya: `node -e "console.log(require('crypto').randomUUID())"`.
 Untuk `NODE_ENV=production` / `staging`, isi juga variabel `DB_*_PROD` / `DB_*_TEST`.
 
+CORS diatur lewat `CORS_ORIGINS` (dipisah koma, tanpa trailing slash; `CORS_ENABLED=false` untuk mematikan).
+Origin yang diizinkan secara default: `http://localhost:3000`, `http://localhost:4000`, `http://localhost:9561`,
+`https://dev-lms.motorsights.com`. Origin lain tidak mendapat header CORS sehingga diblokir browser.
+Request tanpa header `Origin` (curl, server-to-server) tidak terpengaruh. Konfigurasi ada di `src/utils/cors.js`.
+
 > Swagger hanya aktif jika `SWAGGER_ENABLED=true` (atau `NODE_ENV=development`).
 > Jangan pernah commit file `.env`.
 
