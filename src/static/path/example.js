@@ -8,33 +8,28 @@ const authErrors = {
 };
 
 const examplePaths = {
-  '/examples': {
-    get: {
+  '/examples/get': {
+    post: {
       tags: ['Examples'],
       summary: 'Get all examples',
       description: 'Retrieve all examples with pagination',
-      parameters: [
-        {
-          name: 'page',
-          in: 'query',
-          description: 'Page number',
-          required: false,
-          schema: {
-            type: 'integer',
-            default: 1
-          }
-        },
-        {
-          name: 'limit',
-          in: 'query',
-          description: 'Items per page',
-          required: false,
-          schema: {
-            type: 'integer',
-            default: 10
+      requestBody: {
+        required: false,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                page: { type: 'integer', minimum: 1, default: 1, example: 1 },
+                limit: { type: 'integer', minimum: 1, maximum: 100, default: 10, example: 10 },
+                sort_by: { type: 'string', enum: ['name', 'status', 'created_at', 'updated_at'], default: 'created_at', example: 'created_at' },
+                sort_order: { type: 'string', enum: ['asc', 'desc'], default: 'desc', example: 'desc' },
+                search: { type: 'string', maxLength: 100, example: '' }
+              }
+            }
           }
         }
-      ],
+      },
       responses: {
         ...authErrors,
         200: {
@@ -61,7 +56,9 @@ const examplePaths = {
           }
         }
       }
-    },
+    }
+  },
+  '/examples/create': {
     post: {
       tags: ['Examples'],
       summary: 'Create new example',

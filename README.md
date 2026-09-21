@@ -75,7 +75,7 @@ npm run dev     # development (nodemon)
 npm start       # production
 ```
 
-- API: `http://localhost:9561/api`
+- API: `http://localhost:9561/api/lms`
 - Swagger: `http://localhost:9561/documentation`
 
 ## Data contoh (seeder)
@@ -103,47 +103,110 @@ roles >──< permissions       (lewat role_permissions, 1 role = banyak hak ak
 | `role_permissions` | role_id, permission_id (unik berpasangan) |
 | `users` | id, role_id, name, email (unik), password (bcrypt), status (`active`/`inactive`) |
 
-Semua tabel master memakai UUID dan kolom `created_at`, `updated_at`, `deleted_at` (soft delete).
+Semua tabel memakai UUID dan kolom `created_at`, `updated_at`, `deleted_at`, serta kolom audit
+(ditambahkan oleh migrasi `20250101000006_add_audit_columns.js`):
+
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| `created_by` | uuid, nullable | `users.id` pembuat data |
+| `updated_by` | uuid, nullable | `users.id` pengubah terakhir |
+| `deleted_by` | uuid, nullable | `users.id` penghapus data |
+| `is_delete` | boolean, default `false` | Penanda soft delete (semua query memfilter `is_delete = false`) |
+
+Nilai `*_by` diisi otomatis dari `req.user.id`, yaitu `user_id` di payload JWT (= `users.id`).
+Data hasil seeder memiliki `created_by` kosong. Pada `role_permissions`, mencabut hak akses berarti
+`is_delete = true` + `deleted_by` (bukan hapus baris), dan memberikannya lagi mengaktifkan baris yang sama.
 
 ## Autentikasi dan hak akses
 
-1. Login: `POST /api/auth/login` dengan `{ "email", "password" }`.
+1. Login: `POST /api/lms/auth/login` dengan `{ "email", "password" }`.
 2. Kirim token pada setiap request: `Authorization: Bearer <access_token>`.
 
 ```bash
-curl -X POST http://localhost:9561/api/auth/login \
+curl -X POST http://localhost:9561/api/lms/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"email":"superadmin@lms.test","password":"Password123!"}'
 ```
 
+Payload JWT berisi `user_id` (= `users.id`) dan `role`. Token yang tidak memiliki `user_id` ditolak.
+
 Middleware di `src/middlewares/auth.js`:
 
-- `authenticate`: memverifikasi JWT, lalu memastikan user masih ada, berstatus `active`, dan rolenya belum dihapus. Gagal → **401**.
-- `authorize`: mencocokkan method dan path route (contoh `GET /api/roles/:id`) dengan tabel `permissions`, lalu mengecek apakah role user memiliki hak akses tersebut. Gagal → **403**.
+- `authenticate`: memverifikasi JWT, membaca `user_id`, lalu memastikan user masih ada, berstatus `active`, dan rolenya belum dihapus. Gagal → **401**.
+- `authorize`: mencocokkan method dan path route (contoh `GET /api/lms/roles/:id`) dengan tabel `permissions`, lalu mengecek apakah role user memiliki hak akses tersebut. Gagal → **403**.
 
 Pengecekan dilakukan ke database pada setiap request, sehingga perubahan hak akses berlaku langsung tanpa login ulang.
 
 ## Endpoint
 
+Base URL: `http://localhost:9561/api/lms` (nilai `API_TAG` di `src/routes/V1/index.js`).
 Semua endpoint (kecuali login) membutuhkan token dan hak akses yang sesuai.
 
 | Endpoint | Keterangan |
 |---|---|
-| `POST /api/auth/login` | Login (publik) |
-| `GET /api/auth/me` | Profil, role, dan hak akses user login |
-| `GET/POST /api/roles`, `GET/PUT/DELETE /api/roles/:id` | Master role (`GET :id` menyertakan hak akses) |
-| `PUT /api/roles/:id/permissions` | Atur (ganti seluruh) hak akses sebuah role: `{ "permission_ids": [...] }` |
-| `GET/POST /api/permissions`, `GET/PUT/DELETE /api/permissions/:id` | Master hak akses |
-| `GET/POST /api/users`, `GET/PUT/DELETE /api/users/:id` | Master user (filter `role_id`, `search`) |
-| `POST /api/{roles,permissions,users,examples}/:id/restore` | Restore data yang di-soft delete |
-| `/api/examples` | Module contoh (CRUD) |
+| `POST /auth/login` | Login (publik) |
+| `GET /auth/me` | Profil, role, dan hak akses user login |
+| `POST /roles/get` | Daftar role (body list, lihat di bawah) |
+| `POST /roles/create` | Tambah role |
+| `GET /roles/:id` | Detail role, menyertakan hak akses |
+| `PUT /roles/:id` | Ubah role |
+| `DELETE /roles/:id` | Soft delete role |
+| `POST /roles/:id/restore` | Restore role |
+| `PUT /roles/:id/permissions` | Atur (ganti seluruh) hak akses role: `{ "permission_ids": [...] }` |
+| `/permissions/...` | Master hak akses: `POST /get`, `POST /create`, `GET/PUT/DELETE /:id`, `POST /:id/restore` |
+| `/users/...` | Master user: pola sama, `POST /get` juga menerima filter `role_id` |
+| `/examples/...` | Module contoh: pola sama |
 
-List endpoint mendukung `page`, `limit` (maks 100), dan `search`.
+Pola URL setiap module: **list → `POST /get`**, **tambah → `POST /create`**, detail → `GET /:id`,
+ubah → `PUT /:id`, hapus → `DELETE /:id`, restore → `POST /:id/restore`.
 
-Format response:
+### Body endpoint list (`POST /get`)
 
 ```json
-{ "success": true, "message": "Success", "data": {}, "timestamp": "2025-01-01T00:00:00.000Z" }
+{
+  "page": 1,
+  "limit": 10,
+  "sort_by": "created_at",
+  "sort_order": "asc",
+  "search": ""
+}
+```
+
+Semua field opsional. `limit` maksimal 100, `sort_order` adalah `asc` atau `desc`, `search` mencari di kolom teks utama.
+`sort_by` hanya boleh salah satu kolom berikut (selain itu ditolak):
+
+| Module | `sort_by` yang diizinkan | Default |
+|---|---|---|
+| roles | name, slug, created_at, updated_at | created_at desc |
+| permissions | name, code, method, endpoint, created_at, updated_at | code asc |
+| users | name, email, status, role_name, created_at, updated_at | created_at desc |
+| examples | name, status, created_at, updated_at | created_at desc |
+
+Khusus users, body boleh menyertakan `"role_id": "<uuid>"` untuk memfilter berdasarkan role.
+
+Contoh:
+
+```bash
+curl -X POST http://localhost:9561/api/lms/roles/get \
+  -H "Authorization: Bearer <token>" -H 'Content-Type: application/json' \
+  -d '{"page":1,"limit":10,"sort_by":"name","sort_order":"asc","search":""}'
+```
+
+Response list:
+
+```json
+{
+  "success": true,
+  "message": "Success",
+  "data": { "items": [], "pagination": { "page": 1, "limit": 10, "total": 0, "totalPages": 0 } },
+  "timestamp": "2025-01-01T00:00:00.000Z"
+}
+```
+
+Format response lain:
+
+```json
+{ "success": true, "message": "Data berhasil dibuat", "data": {}, "timestamp": "..." }
 { "success": false, "message": "Data tidak ditemukan", "errors": null, "timestamp": "..." }
 ```
 
@@ -170,7 +233,7 @@ src/
 │       ├── service.js          # business logic
 │       ├── repository.js       # query database (Knex)
 │       └── validation.js       # aturan express-validator
-├── routes/V1/index.js          # registrasi module di /api/*
+├── routes/V1/index.js          # registrasi module di /api/lms/*
 ├── repository/postgres/
 │   ├── migrations/             # skema tabel
 │   └── seeders/                # data contoh
@@ -178,7 +241,7 @@ src/
 │   ├── index.js                # gabungan schema + path
 │   ├── path/                   # definisi endpoint (role, permission, user, auth, example)
 │   └── schema/                 # definisi schema
-└── utils/                      # response, logger, pagination, dll.
+└── utils/                      # response, list_params (sort/pagination), logger, dll.
 ```
 
 ## Membuat module baru
@@ -190,19 +253,24 @@ Gunakan `src/modules/example` (atau `roles`) sebagai template.
    - Repository memakai `const { pgCore: db } = require('../../config/database')`.
    - Controller memakai `successResponse` / `errorResponse` dari `utils/response`.
    - Service melempar error berbentuk `{ message, statusCode }`.
+   - Controller meneruskan `req.user.id` ke service, dan repository mengisi `created_by` / `updated_by` / `deleted_by`.
+   - Service hanya meneruskan field yang di-whitelist ke repository (jangan pass `req.body` mentah).
+   - Soft delete: `is_delete = true`, `deleted_at`, `deleted_by`; query selalu filter `is_delete: false`.
 3. **Proteksi**: di `index.js` pasang `router.use(authenticate)` dan `authorize` pada setiap route:
    ```js
    const { authenticate, authorize } = require('../../middlewares/auth');
    router.use(authenticate);
    router.get('/', authorize, listValidation, validateMiddleware, controller.getAll);
    ```
-4. **Daftarkan route** di `src/routes/V1/index.js` (nama endpoint memakai bentuk jamak).
+4. **Daftarkan route** di `src/routes/V1/index.js` (nama endpoint memakai bentuk jamak). Ikuti pola URL: list `POST /get`, tambah `POST /create`, detail `GET /:id`, ubah `PUT /:id`, hapus `DELETE /:id`, restore `POST /:id/restore`.
+   Untuk list, pakai `normalizeListParams` dari `src/utils/list_params.js` (whitelist kolom `sort_by`, batas `limit`).
 5. **Hak akses**: tambahkan resource baru ke `resources` pada seeder
    `0002_roles_permissions_users_seeder.js` (kode `<resource>.<aksi>`, contoh `courses.read`),
    lalu tentukan role mana yang memilikinya di `rolePermissionMap`.
    Tanpa baris di tabel `permissions`, endpoint baru akan selalu **403**, termasuk untuk super-admin.
-   Untuk database yang sudah berjalan, tambahkan lewat `POST /api/permissions` dan
-   `PUT /api/roles/:id/permissions` (tanpa seed ulang).
+   Kolom `endpoint` diisi path lengkap sesuai route, mis. `/api/lms/courses/get` (`API_PREFIX` di seeder harus sama dengan `API_TAG`).
+   Untuk database yang sudah berjalan, tambahkan lewat `POST /api/lms/permissions/create` dan
+   `PUT /api/lms/roles/:id/permissions` (tanpa seed ulang).
 6. **Swagger**: buat `static/schema/<nama>.js` dan `static/path/<nama>.js`
    (helper `crudPaths` di `static/path/_crud.js` cocok untuk CRUD standar),
    lalu daftarkan di `static/index.js`.

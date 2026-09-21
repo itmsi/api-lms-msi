@@ -13,12 +13,12 @@ const { authenticate, authorize } = require('../../middlewares/auth');
 router.use(authenticate);
 
 /**
- * @route   GET /api/examples
+ * @route   POST /api/examples/get
  * @desc    Get all examples with pagination
  * @access  Protected (hak akses examples.*)
  */
-router.get(
-  '/',
+router.post(
+  '/get',
   authorize,
   listValidation,
   validateMiddleware,
@@ -39,12 +39,12 @@ router.get(
 );
 
 /**
- * @route   POST /api/examples
+ * @route   POST /api/examples/create
  * @desc    Create new example
  * @access  Protected (hak akses examples.*)
  */
 router.post(
-  '/',
+  '/create',
   authorize,
   createValidation,
   validateMiddleware,

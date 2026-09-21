@@ -204,13 +204,13 @@ const findAll = async (page = 1, limit = 10) => {
   
   const data = await db(TABLE_NAME)
     .select('*')
-    .where({ deleted_at: null })
+    .where({ is_delete: false })
     .orderBy('created_at', 'desc')
     .limit(limit)
     .offset(offset);
     
   const total = await db(TABLE_NAME)
-    .where({ deleted_at: null })
+    .where({ is_delete: false })
     .count('id as count')
     .first();
     
@@ -227,7 +227,7 @@ const findAll = async (page = 1, limit = 10) => {
 
 const findById = async (id) => {
   return await db(TABLE_NAME)
-    .where({ id, deleted_at: null })
+    .where({ id, is_delete: false })
     .first();
 };
 
@@ -244,7 +244,7 @@ const create = async (data) => {
 
 const update = async (id, data) => {
   const [result] = await db(TABLE_NAME)
-    .where({ id, deleted_at: null })
+    .where({ id, is_delete: false })
     .update({
       ...data,
       updated_at: db.fn.now()
@@ -256,9 +256,11 @@ const update = async (id, data) => {
 const remove = async (id) => {
   // Soft delete
   const [result] = await db(TABLE_NAME)
-    .where({ id, deleted_at: null })
+    .where({ id, is_delete: false })
     .update({
-      deleted_at: db.fn.now()
+      is_delete: true,
+      deleted_at: db.fn.now(),
+      deleted_by: actorId
     })
     .returning('*');
   return result;
@@ -540,7 +542,7 @@ Gunakan soft delete (deleted_at) untuk menjaga data integrity:
 const remove = async (id) => {
   return await db(TABLE_NAME)
     .where({ id })
-    .update({ deleted_at: db.fn.now() });
+    .update({ is_delete: true, deleted_at: db.fn.now(), deleted_by: actorId });
 };
 ```
 

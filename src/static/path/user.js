@@ -10,7 +10,8 @@ module.exports = crudPaths({
   schema: 'User',
   createInput: 'UserCreateInput',
   updateInput: 'UserUpdateInput',
-  listParams: [
-    { name: 'role_id', in: 'query', description: 'Filter berdasarkan role', required: false, schema: { type: 'string', format: 'uuid' } }
-  ]
+  sortBy: ['name', 'email', 'status', 'role_name', 'created_at', 'updated_at'],
+  listProps: {
+    role_id: { type: 'string', format: 'uuid', description: 'Filter berdasarkan role' }
+  }
 });

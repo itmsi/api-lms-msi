@@ -9,5 +9,8 @@ module.exports = crudPaths({
   base: '/permissions',
   schema: 'Permission',
   createInput: 'PermissionInput',
-  updateInput: 'PermissionInput'
+  updateInput: 'PermissionInput',
+  sortBy: ['name', 'code', 'method', 'endpoint', 'created_at', 'updated_at'],
+  defaultSort: 'code',
+  defaultOrder: 'asc'
 });

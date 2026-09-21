@@ -13,10 +13,10 @@ const { authenticate, authorize } = require('../../middlewares/auth');
 router.use(authenticate);
 
 /**
- * @route   GET /api/permissions
+ * @route   POST /api/permissions/get
  * @desc    Get all permissions with pagination
  */
-router.get('/', authorize, listValidation, validateMiddleware, controller.getAll);
+router.post('/get', authorize, listValidation, validateMiddleware, controller.getAll);
 
 /**
  * @route   GET /api/permissions/:id
@@ -25,10 +25,10 @@ router.get('/', authorize, listValidation, validateMiddleware, controller.getAll
 router.get('/:id', authorize, getByIdValidation, validateMiddleware, controller.getById);
 
 /**
- * @route   POST /api/permissions
+ * @route   POST /api/permissions/create
  * @desc    Create new permission
  */
-router.post('/', authorize, createValidation, validateMiddleware, controller.create);
+router.post('/create', authorize, createValidation, validateMiddleware, controller.create);
 
 /**
  * @route   PUT /api/permissions/:id

@@ -1,4 +1,5 @@
 const { pgCore: db } = require('../../config/database');
+const { normalizeListParams } = require('../../utils/list_params');
 
 const TABLE_NAME = 'examples';
 
@@ -12,26 +13,44 @@ const TABLE_NAME = 'examples';
 /**
  * Find all items with pagination
  */
-const findAll = async (page = 1, limit = 10) => {
+const SORTABLE = {
+  name: 'name',
+  status: 'status',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+const findAll = async (params = {}) => {
+  const { page, limit, sortColumn, sortOrder, search } = normalizeListParams(params, {
+    sortable: SORTABLE,
+    defaultSort: 'created_at',
+    defaultOrder: 'desc'
+  });
   const offset = (page - 1) * limit;
-  
-  const data = await db(TABLE_NAME)
+
+  const base = () => {
+    const q = db(TABLE_NAME).where({ is_delete: false });
+    if (search) {
+      q.andWhere((b) => b
+        .whereILike('name', `%${search}%`)
+        .orWhereILike('description', `%${search}%`));
+    }
+    return q;
+  };
+
+  const items = await base()
     .select('*')
-    .where({ deleted_at: null })
-    .orderBy('created_at', 'desc')
+    .orderBy(sortColumn, sortOrder)
     .limit(limit)
     .offset(offset);
-    
-  const total = await db(TABLE_NAME)
-    .where({ deleted_at: null })
-    .count('id as count')
-    .first();
-    
+
+  const total = await base().count('id as count').first();
+
   return {
-    items: data,
+    items,
     pagination: {
-      page: parseInt(page),
-      limit: parseInt(limit),
+      page,
+      limit,
       total: parseInt(total.count),
       totalPages: Math.ceil(total.count / limit)
     }
@@ -43,7 +62,7 @@ const findAll = async (page = 1, limit = 10) => {
  */
 const findById = async (id) => {
   return await db(TABLE_NAME)
-    .where({ id, deleted_at: null })
+    .where({ id, is_delete: false })
     .first();
 };
 
@@ -52,17 +71,18 @@ const findById = async (id) => {
  */
 const findOne = async (conditions) => {
   return await db(TABLE_NAME)
-    .where({ ...conditions, deleted_at: null })
+    .where({ ...conditions, is_delete: false })
     .first();
 };
 
 /**
  * Create new item
  */
-const create = async (data) => {
+const create = async (data, actorId = null) => {
   const [result] = await db(TABLE_NAME)
     .insert({
       ...data,
+      created_by: actorId,
       created_at: db.fn.now(),
       updated_at: db.fn.now()
     })
@@ -73,11 +93,12 @@ const create = async (data) => {
 /**
  * Update existing item
  */
-const update = async (id, data) => {
+const update = async (id, data, actorId = null) => {
   const [result] = await db(TABLE_NAME)
-    .where({ id, deleted_at: null })
+    .where({ id, is_delete: false })
     .update({
       ...data,
+      updated_by: actorId,
       updated_at: db.fn.now()
     })
     .returning('*');
@@ -87,11 +108,13 @@ const update = async (id, data) => {
 /**
  * Soft delete item
  */
-const remove = async (id) => {
+const remove = async (id, actorId = null) => {
   const [result] = await db(TABLE_NAME)
-    .where({ id, deleted_at: null })
+    .where({ id, is_delete: false })
     .update({
-      deleted_at: db.fn.now()
+      is_delete: true,
+      deleted_at: db.fn.now(),
+      deleted_by: actorId
     })
     .returning('*');
   return result;
@@ -100,12 +123,15 @@ const remove = async (id) => {
 /**
  * Restore soft deleted item
  */
-const restore = async (id) => {
+const restore = async (id, actorId = null) => {
   const [result] = await db(TABLE_NAME)
     .where({ id })
-    .whereNotNull('deleted_at')
+    .where({ is_delete: true })
     .update({
+      is_delete: false,
       deleted_at: null,
+      deleted_by: null,
+      updated_by: actorId,
       updated_at: db.fn.now()
     })
     .returning('*');

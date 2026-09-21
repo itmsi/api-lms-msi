@@ -10,7 +10,8 @@ const rolePaths = crudPaths({
   schema: 'Role',
   detail: 'RoleDetail',
   createInput: 'RoleInput',
-  updateInput: 'RoleInput'
+  updateInput: 'RoleInput',
+  sortBy: ['name', 'slug', 'created_at', 'updated_at']
 });
 
 rolePaths['/roles/{id}/permissions'] = {

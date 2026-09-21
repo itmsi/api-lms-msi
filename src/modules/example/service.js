@@ -1,5 +1,12 @@
 const repository = require('./repository');
 
+const FIELDS = ['name', 'description', 'status'];
+
+// hanya field yang diizinkan yang boleh masuk ke database (cegah mass-assignment kolom audit)
+const pick = (data = {}) => Object.fromEntries(
+  FIELDS.filter((k) => data[k] !== undefined).map((k) => [k, data[k]])
+);
+
 /**
  * Service Layer - Business Logic
  * 
@@ -10,8 +17,8 @@ const repository = require('./repository');
 /**
  * Get all items with pagination
  */
-const getAllItems = async (page = 1, limit = 10) => {
-  return await repository.findAll(page, limit);
+const getAllItems = async (params = {}) => {
+  return await repository.findAll(params);
 };
 
 /**
@@ -30,14 +37,14 @@ const getItemById = async (id) => {
 /**
  * Create new item
  */
-const createItem = async (itemData) => {
-  return await repository.create(itemData);
+const createItem = async (itemData, actorId) => {
+  return await repository.create(pick(itemData), actorId);
 };
 
 /**
  * Update existing item
  */
-const updateItem = async (id, itemData) => {
+const updateItem = async (id, itemData, actorId) => {
   // Check if item exists
   const existingItem = await repository.findById(id);
   
@@ -45,13 +52,13 @@ const updateItem = async (id, itemData) => {
     throw { message: 'Data tidak ditemukan', statusCode: 404 };
   }
   
-  return await repository.update(id, itemData);
+  return await repository.update(id, pick(itemData), actorId);
 };
 
 /**
  * Soft delete item
  */
-const deleteItem = async (id) => {
+const deleteItem = async (id, actorId) => {
   // Check if item exists
   const existingItem = await repository.findById(id);
   
@@ -59,15 +66,15 @@ const deleteItem = async (id) => {
     throw { message: 'Data tidak ditemukan', statusCode: 404 };
   }
   
-  const result = await repository.remove(id);
+  const result = await repository.remove(id, actorId);
   return result;
 };
 
 /**
  * Restore soft deleted item
  */
-const restoreItem = async (id) => {
-  const data = await repository.restore(id);
+const restoreItem = async (id, actorId) => {
+  const data = await repository.restore(id, actorId);
   
   if (!data) {
     throw { message: 'Data tidak ditemukan', statusCode: 404 };

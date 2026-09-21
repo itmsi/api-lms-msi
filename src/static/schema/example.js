@@ -47,7 +47,11 @@ const exampleSchemas = {
         nullable: true,
         description: 'Deletion timestamp (null if not deleted)',
         example: null
-      }
+      },
+      created_by: { type: 'string', format: 'uuid', nullable: true, description: 'users.id pembuat data', example: null },
+      updated_by: { type: 'string', format: 'uuid', nullable: true, description: 'users.id pengubah terakhir', example: null },
+      deleted_by: { type: 'string', format: 'uuid', nullable: true, description: 'users.id penghapus data', example: null },
+      is_delete: { type: 'boolean', description: 'Penanda soft delete', example: false }
     }
   },
   ExampleInput: {

@@ -6,6 +6,10 @@ const bcrypt = require('bcrypt');
 
 const DEFAULT_PASSWORD = 'Password123!';
 
+// Harus sama dengan API_TAG di src/routes/V1/index.js
+// (authorize mencocokkan method + path lengkap dengan kolom permissions.endpoint)
+const API_PREFIX = '/api/lms';
+
 const roles = [
   { slug: 'super-admin', name: 'Super Admin', description: 'Akses penuh ke seluruh sistem' },
   { slug: 'admin', name: 'Admin', description: 'Pengelola sistem LMS' },
@@ -14,16 +18,16 @@ const roles = [
 ];
 
 const resources = [
-  { key: 'roles', label: 'Role', endpoint: '/api/roles' },
-  { key: 'permissions', label: 'Hak Akses', endpoint: '/api/permissions' },
-  { key: 'users', label: 'User', endpoint: '/api/users' },
-  { key: 'examples', label: 'Example', endpoint: '/api/examples' }
+  { key: 'roles', label: 'Role', endpoint: `${API_PREFIX}/roles` },
+  { key: 'permissions', label: 'Hak Akses', endpoint: `${API_PREFIX}/permissions` },
+  { key: 'users', label: 'User', endpoint: `${API_PREFIX}/users` },
+  { key: 'examples', label: 'Example', endpoint: `${API_PREFIX}/examples` }
 ];
 
 const actions = [
-  { key: 'read', label: 'Lihat daftar', method: 'GET', suffix: '' },
+  { key: 'read', label: 'Lihat daftar', method: 'POST', suffix: '/get' },
   { key: 'detail', label: 'Lihat detail', method: 'GET', suffix: '/:id' },
-  { key: 'create', label: 'Tambah', method: 'POST', suffix: '' },
+  { key: 'create', label: 'Tambah', method: 'POST', suffix: '/create' },
   { key: 'update', label: 'Ubah', method: 'PUT', suffix: '/:id' },
   { key: 'delete', label: 'Hapus', method: 'DELETE', suffix: '/:id' },
   { key: 'restore', label: 'Restore', method: 'POST', suffix: '/:id/restore' }
@@ -42,7 +46,7 @@ permissions.push({
   code: 'roles.sync-permissions',
   name: 'Atur Hak Akses Role',
   method: 'PUT',
-  endpoint: '/api/roles/:id/permissions',
+  endpoint: `${API_PREFIX}/roles/:id/permissions`,
   description: 'Mengatur daftar hak akses pada sebuah role'
 });
 

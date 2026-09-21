@@ -1,4 +1,5 @@
 const { pgCore: db } = require('../../config/database');
+const { normalizeListParams } = require('../../utils/list_params');
 
 const TABLE_NAME = 'permissions';
 
@@ -6,11 +7,25 @@ const TABLE_NAME = 'permissions';
  * Repository Layer - Database Operations (permissions)
  */
 
-const findAll = async (page = 1, limit = 10, search = '') => {
+const SORTABLE = {
+  name: 'name',
+  code: 'code',
+  method: 'method',
+  endpoint: 'endpoint',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+const findAll = async (params = {}) => {
+  const { page, limit, sortColumn, sortOrder, search } = normalizeListParams(params, {
+    sortable: SORTABLE,
+    defaultSort: 'code',
+    defaultOrder: 'asc'
+  });
   const offset = (page - 1) * limit;
 
   const base = () => {
-    const q = db(TABLE_NAME).where({ deleted_at: null });
+    const q = db(TABLE_NAME).where({ is_delete: false });
     if (search) {
       q.andWhere((b) => b
         .whereILike('name', `%${search}%`)
@@ -22,7 +37,7 @@ const findAll = async (page = 1, limit = 10, search = '') => {
 
   const items = await base()
     .select('*')
-    .orderBy('code', 'asc')
+    .orderBy(sortColumn, sortOrder)
     .limit(limit)
     .offset(offset);
 
@@ -31,8 +46,8 @@ const findAll = async (page = 1, limit = 10, search = '') => {
   return {
     items,
     pagination: {
-      page: parseInt(page),
-      limit: parseInt(limit),
+      page,
+      limit,
       total: parseInt(total.count),
       totalPages: Math.ceil(total.count / limit)
     }
@@ -40,41 +55,41 @@ const findAll = async (page = 1, limit = 10, search = '') => {
 };
 
 const findById = async (id) => {
-  return await db(TABLE_NAME).where({ id, deleted_at: null }).first();
+  return await db(TABLE_NAME).where({ id, is_delete: false }).first();
 };
 
 const findOne = async (conditions) => {
-  return await db(TABLE_NAME).where({ ...conditions, deleted_at: null }).first();
+  return await db(TABLE_NAME).where({ ...conditions, is_delete: false }).first();
 };
 
-const create = async (data) => {
+const create = async (data, actorId = null) => {
   const [result] = await db(TABLE_NAME)
-    .insert({ ...data, created_at: db.fn.now(), updated_at: db.fn.now() })
+    .insert({ ...data, created_by: actorId, created_at: db.fn.now(), updated_at: db.fn.now() })
     .returning('*');
   return result;
 };
 
-const update = async (id, data) => {
+const update = async (id, data, actorId = null) => {
   const [result] = await db(TABLE_NAME)
-    .where({ id, deleted_at: null })
-    .update({ ...data, updated_at: db.fn.now() })
+    .where({ id, is_delete: false })
+    .update({ ...data, updated_by: actorId, updated_at: db.fn.now() })
     .returning('*');
   return result;
 };
 
-const remove = async (id) => {
+const remove = async (id, actorId = null) => {
   const [result] = await db(TABLE_NAME)
-    .where({ id, deleted_at: null })
-    .update({ deleted_at: db.fn.now() })
+    .where({ id, is_delete: false })
+    .update({ is_delete: true, deleted_at: db.fn.now(), deleted_by: actorId })
     .returning('*');
   return result;
 };
 
-const restore = async (id) => {
+const restore = async (id, actorId = null) => {
   const [result] = await db(TABLE_NAME)
     .where({ id })
-    .whereNotNull('deleted_at')
-    .update({ deleted_at: null, updated_at: db.fn.now() })
+    .where({ is_delete: true })
+    .update({ is_delete: false, deleted_at: null, deleted_by: null, updated_at: db.fn.now(), updated_by: actorId })
     .returning('*');
   return result;
 };

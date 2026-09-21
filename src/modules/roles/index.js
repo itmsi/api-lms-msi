@@ -14,10 +14,10 @@ const { authenticate, authorize } = require('../../middlewares/auth');
 router.use(authenticate);
 
 /**
- * @route   GET /api/roles
+ * @route   POST /api/roles/get
  * @desc    Get all roles with pagination
  */
-router.get('/', authorize, listValidation, validateMiddleware, controller.getAll);
+router.post('/get', authorize, listValidation, validateMiddleware, controller.getAll);
 
 /**
  * @route   GET /api/roles/:id
@@ -26,10 +26,10 @@ router.get('/', authorize, listValidation, validateMiddleware, controller.getAll
 router.get('/:id', authorize, getByIdValidation, validateMiddleware, controller.getById);
 
 /**
- * @route   POST /api/roles
+ * @route   POST /api/roles/create
  * @desc    Create new role
  */
-router.post('/', authorize, createValidation, validateMiddleware, controller.create);
+router.post('/create', authorize, createValidation, validateMiddleware, controller.create);
 
 /**
  * @route   PUT /api/roles/:id

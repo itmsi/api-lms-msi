@@ -1,43 +1,43 @@
 const info = {
-  description: 'API Learning Management System (LMS) MSI',
-  version: '1.0.0',
-  title: 'LMS API Documentation',
+  description: "API Learning Management System (LMS) MSI",
+  version: "1.0.0",
+  title: "LMS API Documentation",
   contact: {
-    email: 'your-email@example.com'
+    email: "your-email@example.com",
   },
   license: {
-    name: 'MIT',
-    url: 'https://opensource.org/licenses/MIT'
-  }
-}
+    name: "MIT",
+    url: "https://opensource.org/licenses/MIT",
+  },
+};
 
 const servers = [
   {
-    url: '/api/',
-    description: 'Development server'
+    url: "/api/lms/",
+    description: "Development server",
   },
   {
-    url: 'https://your-production-url.com/api/',
-    description: 'Production server'
-  }
-]
+    url: "https://production-url.com/api/lms/",
+    description: "Production server",
+  },
+];
 
 // Import schemas
 // Tambahkan schema module Anda di sini
-const exampleSchema = require('./schema/example');
-const commonSchema = require('./schema/common');
-const authSchema = require('./schema/auth');
-const roleSchema = require('./schema/role');
-const permissionSchema = require('./schema/permission');
-const userSchema = require('./schema/user');
+const exampleSchema = require("./schema/example");
+const commonSchema = require("./schema/common");
+const authSchema = require("./schema/auth");
+const roleSchema = require("./schema/role");
+const permissionSchema = require("./schema/permission");
+const userSchema = require("./schema/user");
 
 // Import paths
 // Tambahkan path module Anda di sini
-const examplePaths = require('./path/example');
-const authPaths = require('./path/auth');
-const rolePaths = require('./path/role');
-const permissionPaths = require('./path/permission');
-const userPaths = require('./path/user');
+const examplePaths = require("./path/example");
+const authPaths = require("./path/auth");
+const rolePaths = require("./path/role");
+const permissionPaths = require("./path/permission");
+const userPaths = require("./path/user");
 
 // Combine all schemas
 const schemas = {
@@ -61,7 +61,7 @@ const paths = {
 };
 
 const index = {
-  openapi: '3.0.0',
+  openapi: "3.0.0",
   info,
   servers,
   security: [{ bearerAuth: [] }],
@@ -69,15 +69,15 @@ const index = {
   components: {
     securitySchemes: {
       bearerAuth: {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT'
-      }
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+      },
     },
-    schemas
-  }
-}
+    schemas,
+  },
+};
 
 module.exports = {
-  index
-}
+  index,
+};

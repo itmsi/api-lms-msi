@@ -11,8 +11,7 @@ const handleError = (res, error) => {
 
 const getAll = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '', role_id = null } = req.query;
-    const data = await service.getAllItems(page, limit, search, role_id);
+    const data = await service.getAllItems(req.body);
     return successResponse(res, data);
   } catch (error) {
     return handleError(res, error);
@@ -30,7 +29,7 @@ const getById = async (req, res) => {
 
 const create = async (req, res) => {
   try {
-    const data = await service.createItem(req.body);
+    const data = await service.createItem(req.body, req.user.id);
     return successResponse(res, data, 'Data berhasil dibuat', 201);
   } catch (error) {
     return handleError(res, error);
@@ -39,7 +38,7 @@ const create = async (req, res) => {
 
 const update = async (req, res) => {
   try {
-    const data = await service.updateItem(req.params.id, req.body);
+    const data = await service.updateItem(req.params.id, req.body, req.user.id);
     return successResponse(res, data, 'Data berhasil diupdate');
   } catch (error) {
     return handleError(res, error);
@@ -48,7 +47,7 @@ const update = async (req, res) => {
 
 const remove = async (req, res) => {
   try {
-    await service.deleteItem(req.params.id);
+    await service.deleteItem(req.params.id, req.user.id);
     return successResponse(res, null, 'Data berhasil dihapus');
   } catch (error) {
     return handleError(res, error);
@@ -57,7 +56,7 @@ const remove = async (req, res) => {
 
 const restore = async (req, res) => {
   try {
-    const data = await service.restoreItem(req.params.id);
+    const data = await service.restoreItem(req.params.id, req.user.id);
     return successResponse(res, data, 'Data berhasil direstore');
   } catch (error) {
     return handleError(res, error);

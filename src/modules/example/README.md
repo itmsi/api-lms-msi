@@ -62,9 +62,13 @@ Tabel `examples`:
 | created_at | TIMESTAMP | Waktu pembuatan |
 | updated_at | TIMESTAMP | Waktu update terakhir |
 | deleted_at | TIMESTAMP | Waktu soft delete (nullable) |
+| created_by | UUID | `users.id` pembuat data (nullable) |
+| updated_by | UUID | `users.id` pengubah terakhir (nullable) |
+| deleted_by | UUID | `users.id` penghapus data (nullable) |
+| is_delete | BOOLEAN | Penanda soft delete (default `false`) |
 
 Indexes:
-- `idx_examples_deleted_at` - untuk soft delete queries
+- `idx_examples_deleted_at`, `idx_examples_is_delete` - untuk soft delete queries
 - `idx_examples_status` - untuk filter by status
 - `idx_examples_created_at` - untuk sorting
 
@@ -72,12 +76,15 @@ Indexes:
 
 ### 1. Get All Examples (with pagination)
 ```http
-GET /api/examples?page=1&limit=10
+POST /api/lms/examples/get
 ```
 
-**Query Parameters:**
-- `page` (optional): Halaman yang ingin ditampilkan (default: 1)
-- `limit` (optional): Jumlah item per halaman (default: 10, max: 100)
+**Body (JSON, semua opsional):**
+- `page`: Halaman yang ingin ditampilkan (default: 1)
+- `limit`: Jumlah item per halaman (default: 10, max: 100)
+- `sort_by`: `name`, `status`, `created_at`, atau `updated_at` (default: `created_at`)
+- `sort_order`: `asc` atau `desc` (default: `desc`)
+- `search`: Kata kunci pada `name` / `description`
 
 **Response:**
 ```json
@@ -107,7 +114,7 @@ GET /api/examples?page=1&limit=10
 
 ### 2. Get Example by ID
 ```http
-GET /api/examples/:id
+GET /api/lms/examples/:id
 ```
 
 **Response:**
@@ -128,7 +135,7 @@ GET /api/examples/:id
 
 ### 3. Create Example
 ```http
-POST /api/examples
+POST /api/lms/examples/create
 Content-Type: application/json
 
 {
@@ -157,7 +164,7 @@ Content-Type: application/json
 
 ### 4. Update Example
 ```http
-PUT /api/examples/:id
+PUT /api/lms/examples/:id
 Content-Type: application/json
 
 {
@@ -186,7 +193,7 @@ Content-Type: application/json
 
 ### 5. Delete Example (Soft Delete)
 ```http
-DELETE /api/examples/:id
+DELETE /api/lms/examples/:id
 ```
 
 **Response:**
@@ -199,7 +206,7 @@ DELETE /api/examples/:id
 
 ### 6. Restore Deleted Example
 ```http
-POST /api/examples/:id/restore
+POST /api/lms/examples/:id/restore
 ```
 
 **Response:**
@@ -276,26 +283,27 @@ Test endpoints dengan curl atau Postman:
 
 ```bash
 # Create
-curl -X POST http://localhost:3000/api/examples \
+curl -X POST http://localhost:9561/api/lms/examples/create \
   -H "Content-Type: application/json" \
   -d '{"name":"Test Example","description":"Test","status":"active"}'
 
 # Get All
-curl http://localhost:3000/api/examples?page=1&limit=10
+curl -X POST http://localhost:9561/api/lms/examples/get -H 'Content-Type: application/json' \
+  -d '{"page":1,"limit":10,"sort_by":"created_at","sort_order":"desc","search":""}'
 
 # Get by ID
-curl http://localhost:3000/api/examples/{id}
+curl http://localhost:9561/api/lms/examples/{id}
 
 # Update
-curl -X PUT http://localhost:3000/api/examples/{id} \
+curl -X PUT http://localhost:9561/api/lms/examples/{id} \
   -H "Content-Type: application/json" \
   -d '{"name":"Updated Name"}'
 
 # Delete
-curl -X DELETE http://localhost:3000/api/examples/{id}
+curl -X DELETE http://localhost:9561/api/lms/examples/{id}
 
 # Restore
-curl -X POST http://localhost:3000/api/examples/{id}/restore
+curl -X POST http://localhost:9561/api/lms/examples/{id}/restore
 ```
 
 ## 🔐 Menambahkan Authentication
@@ -325,7 +333,8 @@ router.get('/', verifyToken, listValidation, validateMiddleware, controller.getA
    - Validation middleware di routes
 
 4. **Soft Delete**: Gunakan `deleted_at` untuk soft delete
-   - Semua query di repository harus filter `deleted_at: null`
+   - Soft delete mengisi `is_delete = true`, `deleted_at`, dan `deleted_by`
+   - Semua query di repository harus filter `is_delete: false`
 
 5. **Pagination**: Implement pagination untuk list endpoints
    - Service layer memanggil repository dengan page & limit
@@ -333,7 +342,8 @@ router.get('/', verifyToken, listValidation, validateMiddleware, controller.getA
 
 6. **Indexes**: Tambahkan index untuk kolom yang sering di-query
 
-7. **Timestamps**: Selalu include created_at, updated_at, deleted_at
+7. **Timestamps & audit**: Selalu include created_at, updated_at, deleted_at, created_by, updated_by, deleted_by, is_delete
+   - `created_by`/`updated_by`/`deleted_by` diisi dari `req.user.id` (payload token `user_id` = `users.id`)
 
 8. **UUID**: Gunakan UUID untuk primary key
 

@@ -35,6 +35,21 @@ const authErrors = {
 
 const ref = (name) => ({ $ref: `#/components/schemas/${name}` });
 
+/**
+ * Body standar untuk endpoint POST /get
+ */
+const listRequest = (sortBy, defaultSort = 'created_at', defaultOrder = 'desc', extra = {}) => ({
+  type: 'object',
+  properties: {
+    page: { type: 'integer', minimum: 1, default: 1, example: 1 },
+    limit: { type: 'integer', minimum: 1, maximum: 100, default: 10, example: 10 },
+    sort_by: { type: 'string', enum: sortBy, default: defaultSort, example: defaultSort },
+    sort_order: { type: 'string', enum: ['asc', 'desc'], default: defaultOrder, example: defaultOrder },
+    search: { type: 'string', maxLength: 100, example: '' },
+    ...extra
+  }
+});
+
 const paginated = (schemaName) => ({
   type: 'object',
   properties: {
@@ -52,29 +67,28 @@ const paginated = (schemaName) => ({
  * @param {string} o.detail     Schema detail (GET by id)
  * @param {string} o.createInput
  * @param {string} o.updateInput
- * @param {object[]} o.listParams Query param tambahan untuk list
+ * @param {string[]} o.sortBy   Kolom yang boleh dipakai pada sort_by
+ * @param {string} o.defaultSort / o.defaultOrder  Urutan default
+ * @param {object} o.listProps  Properti body tambahan untuk POST /get
  */
 const crudPaths = (o) => {
   const tags = [o.tag];
-  const pageParams = [
-    { name: 'page', in: 'query', description: 'Page number', required: false, schema: { type: 'integer', default: 1 } },
-    { name: 'limit', in: 'query', description: 'Items per page', required: false, schema: { type: 'integer', default: 10 } },
-    { name: 'search', in: 'query', description: 'Kata kunci pencarian', required: false, schema: { type: 'string' } },
-    ...(o.listParams || [])
-  ];
+  const listBody = listRequest(o.sortBy, o.defaultSort, o.defaultOrder, o.listProps);
 
   return {
-    [o.base]: {
-      get: {
+    [`${o.base}/get`]: {
+      post: {
         tags,
         summary: `Get all ${o.label}`,
-        description: `Retrieve all ${o.label} with pagination`,
-        parameters: pageParams,
+        description: `Retrieve all ${o.label} with pagination, sorting, and search`,
+        requestBody: { required: false, content: json(listBody) },
         responses: {
           ...authErrors,
           200: { description: 'Success', content: json(envelope(paginated(o.schema), 'Success')) }
         }
-      },
+      }
+    },
+    [`${o.base}/create`]: {
       post: {
         tags,
         summary: `Create new ${o.label}`,
@@ -142,4 +156,4 @@ const crudPaths = (o) => {
   };
 };
 
-module.exports = { crudPaths, authErrors, json, envelope, errorResponse, idParam, ref };
+module.exports = { crudPaths, listRequest, authErrors, json, envelope, errorResponse, idParam, ref };

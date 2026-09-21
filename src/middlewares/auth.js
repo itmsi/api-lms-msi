@@ -20,15 +20,22 @@ const authenticate = async (req, res, next) => {
       return unauthorizedResponse(res, 'Token tidak valid atau sudah kedaluwarsa')
     }
 
+    // user_id di payload token = users.id
+    const userId = decoded.user_id
+    if (!userId) {
+      return unauthorizedResponse(res, 'Token tidak valid')
+    }
+
     const user = await db('users')
       .join('roles', 'roles.id', 'users.role_id')
-      .where({ 'users.id': decoded.sub, 'users.deleted_at': null, 'roles.deleted_at': null })
+      .where({ 'users.id': userId, 'users.is_delete': false, 'roles.is_delete': false })
       .first('users.id', 'users.name', 'users.email', 'users.status', 'users.role_id', 'roles.slug as role_slug')
 
     if (!user || user.status !== 'active') {
       return unauthorizedResponse(res, 'User tidak ditemukan atau tidak aktif')
     }
 
+    // req.user.id dipakai module untuk kolom created_by / updated_by / deleted_by
     req.user = user
     return next()
   } catch (error) {
@@ -56,7 +63,8 @@ const authorize = async (req, res, next) => {
         'rp.role_id': req.user.role_id,
         'p.method': req.method.toUpperCase(),
         'p.endpoint': endpoint,
-        'p.deleted_at': null
+        'rp.is_delete': false,
+        'p.is_delete': false
       })
       .first('p.id')
 

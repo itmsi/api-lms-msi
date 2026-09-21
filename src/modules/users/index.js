@@ -13,10 +13,10 @@ const { authenticate, authorize } = require('../../middlewares/auth');
 router.use(authenticate);
 
 /**
- * @route   GET /api/users
+ * @route   POST /api/users/get
  * @desc    Get all users with pagination
  */
-router.get('/', authorize, listValidation, validateMiddleware, controller.getAll);
+router.post('/get', authorize, listValidation, validateMiddleware, controller.getAll);
 
 /**
  * @route   GET /api/users/:id
@@ -25,10 +25,10 @@ router.get('/', authorize, listValidation, validateMiddleware, controller.getAll
 router.get('/:id', authorize, getByIdValidation, validateMiddleware, controller.getById);
 
 /**
- * @route   POST /api/users
+ * @route   POST /api/users/create
  * @desc    Create new user
  */
-router.post('/', authorize, createValidation, validateMiddleware, controller.create);
+router.post('/create', authorize, createValidation, validateMiddleware, controller.create);
 
 /**
  * @route   PUT /api/users/:id

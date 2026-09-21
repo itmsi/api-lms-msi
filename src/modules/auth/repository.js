@@ -7,7 +7,7 @@ const { pgCore: db } = require('../../config/database');
 const findUserByEmail = async (email) => {
   return await db('users')
     .join('roles', 'roles.id', 'users.role_id')
-    .where({ 'users.email': email, 'users.deleted_at': null, 'roles.deleted_at': null })
+    .where({ 'users.email': email, 'users.is_delete': false, 'roles.is_delete': false })
     .first(
       'users.id',
       'users.name',
@@ -23,7 +23,7 @@ const findUserByEmail = async (email) => {
 const findUserById = async (id) => {
   return await db('users')
     .join('roles', 'roles.id', 'users.role_id')
-    .where({ 'users.id': id, 'users.deleted_at': null })
+    .where({ 'users.id': id, 'users.is_delete': false })
     .first(
       'users.id',
       'users.name',
@@ -38,7 +38,7 @@ const findUserById = async (id) => {
 const findPermissionsByRole = async (roleId) => {
   return await db('role_permissions as rp')
     .join('permissions as p', 'p.id', 'rp.permission_id')
-    .where({ 'rp.role_id': roleId, 'p.deleted_at': null })
+    .where({ 'rp.role_id': roleId, 'rp.is_delete': false, 'p.is_delete': false })
     .select('p.code', 'p.method', 'p.endpoint')
     .orderBy('p.code', 'asc');
 };

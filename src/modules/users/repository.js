@@ -1,4 +1,5 @@
 const { pgCore: db } = require('../../config/database');
+const { normalizeListParams } = require('../../utils/list_params');
 
 const TABLE_NAME = 'users';
 
@@ -22,12 +23,26 @@ const COLUMNS = [
 
 const withRole = () => db(TABLE_NAME).leftJoin('roles', 'roles.id', 'users.role_id');
 
-const findAll = async (page = 1, limit = 10, search = '', roleId = null) => {
+const SORTABLE = {
+  name: 'users.name',
+  email: 'users.email',
+  status: 'users.status',
+  role_name: 'roles.name',
+  created_at: 'users.created_at',
+  updated_at: 'users.updated_at'
+};
+
+const findAll = async (params = {}) => {
+  const { page, limit, sortColumn, sortOrder, search } = normalizeListParams(params, {
+    sortable: SORTABLE,
+    defaultSort: 'created_at',
+    defaultOrder: 'desc'
+  });
   const offset = (page - 1) * limit;
 
   const base = () => {
-    const q = withRole().where({ 'users.deleted_at': null });
-    if (roleId) q.andWhere('users.role_id', roleId);
+    const q = withRole().where({ 'users.is_delete': false });
+    if (params.role_id) q.andWhere('users.role_id', params.role_id);
     if (search) {
       q.andWhere((b) => b
         .whereILike('users.name', `%${search}%`)
@@ -38,7 +53,7 @@ const findAll = async (page = 1, limit = 10, search = '', roleId = null) => {
 
   const items = await base()
     .select(COLUMNS)
-    .orderBy('users.created_at', 'desc')
+    .orderBy(sortColumn, sortOrder)
     .limit(limit)
     .offset(offset);
 
@@ -47,8 +62,8 @@ const findAll = async (page = 1, limit = 10, search = '', roleId = null) => {
   return {
     items,
     pagination: {
-      page: parseInt(page),
-      limit: parseInt(limit),
+      page,
+      limit,
       total: parseInt(total.count),
       totalPages: Math.ceil(total.count / limit)
     }
@@ -57,49 +72,49 @@ const findAll = async (page = 1, limit = 10, search = '', roleId = null) => {
 
 const findById = async (id) => {
   return await withRole()
-    .where({ 'users.id': id, 'users.deleted_at': null })
+    .where({ 'users.id': id, 'users.is_delete': false })
     .select(COLUMNS)
     .first();
 };
 
 const findOne = async (conditions) => {
-  return await db(TABLE_NAME).where({ ...conditions, deleted_at: null }).first();
+  return await db(TABLE_NAME).where({ ...conditions, is_delete: false }).first();
 };
 
-const create = async (data) => {
+const create = async (data, actorId = null) => {
   const [result] = await db(TABLE_NAME)
-    .insert({ ...data, created_at: db.fn.now(), updated_at: db.fn.now() })
+    .insert({ ...data, created_by: actorId, created_at: db.fn.now(), updated_at: db.fn.now() })
     .returning('id');
   return await findById(result.id);
 };
 
-const update = async (id, data) => {
+const update = async (id, data, actorId = null) => {
   const [result] = await db(TABLE_NAME)
-    .where({ id, deleted_at: null })
-    .update({ ...data, updated_at: db.fn.now() })
+    .where({ id, is_delete: false })
+    .update({ ...data, updated_by: actorId, updated_at: db.fn.now() })
     .returning('id');
   return result ? await findById(result.id) : undefined;
 };
 
-const remove = async (id) => {
+const remove = async (id, actorId = null) => {
   const [result] = await db(TABLE_NAME)
-    .where({ id, deleted_at: null })
-    .update({ deleted_at: db.fn.now() })
+    .where({ id, is_delete: false })
+    .update({ is_delete: true, deleted_at: db.fn.now(), deleted_by: actorId })
     .returning('id');
   return result;
 };
 
-const restore = async (id) => {
+const restore = async (id, actorId = null) => {
   const [result] = await db(TABLE_NAME)
     .where({ id })
-    .whereNotNull('deleted_at')
-    .update({ deleted_at: null, updated_at: db.fn.now() })
+    .where({ is_delete: true })
+    .update({ is_delete: false, deleted_at: null, deleted_by: null, updated_at: db.fn.now(), updated_by: actorId })
     .returning('id');
   return result ? await findById(result.id) : undefined;
 };
 
 const roleExists = async (roleId) => {
-  const role = await db('roles').where({ id: roleId, deleted_at: null }).first('id');
+  const role = await db('roles').where({ id: roleId, is_delete: false }).first('id');
   return !!role;
 };
 

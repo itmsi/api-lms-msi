@@ -23,7 +23,7 @@ const login = async ({ email, password }) => {
   }
 
   const token = jwt.sign(
-    { sub: user.id, role: user.role_slug },
+    { user_id: user.id, role: user.role_slug },
     process.env.SECRET_KEY_AUTH_JWT,
     { algorithm: 'HS256', expiresIn: TOKEN_TTL_SECONDS }
   );
