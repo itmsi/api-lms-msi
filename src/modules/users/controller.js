@@ -1,12 +1,17 @@
-const service = require('./service');
-const { successResponse, errorResponse } = require('../../utils/response');
+const service = require("./service");
+const { successResponse, errorResponse } = require("../../utils/response");
+const { decodeTokenSso } = require("../../utils");
 
 /**
  * Controller Layer - HTTP Request/Response Handler (users)
  */
 
 const handleError = (res, error) => {
-  return errorResponse(res, error.message || 'Internal server error', error.statusCode || 500);
+  return errorResponse(
+    res,
+    error.message || "Internal server error",
+    error.statusCode || 500,
+  );
 };
 
 const getAll = async (req, res) => {
@@ -30,7 +35,7 @@ const getById = async (req, res) => {
 const create = async (req, res) => {
   try {
     const data = await service.createItem(req.body, req.user.id);
-    return successResponse(res, data, 'Data berhasil dibuat', 201);
+    return successResponse(res, data, "Data berhasil dibuat", 201);
   } catch (error) {
     return handleError(res, error);
   }
@@ -39,7 +44,7 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   try {
     const data = await service.updateItem(req.params.id, req.body, req.user.id);
-    return successResponse(res, data, 'Data berhasil diupdate');
+    return successResponse(res, data, "Data berhasil diupdate");
   } catch (error) {
     return handleError(res, error);
   }
@@ -48,7 +53,7 @@ const update = async (req, res) => {
 const remove = async (req, res) => {
   try {
     await service.deleteItem(req.params.id, req.user.id);
-    return successResponse(res, null, 'Data berhasil dihapus');
+    return successResponse(res, null, "Data berhasil dihapus");
   } catch (error) {
     return handleError(res, error);
   }
@@ -57,7 +62,7 @@ const remove = async (req, res) => {
 const restore = async (req, res) => {
   try {
     const data = await service.restoreItem(req.params.id, req.user.id);
-    return successResponse(res, data, 'Data berhasil direstore');
+    return successResponse(res, data, "Data berhasil direstore");
   } catch (error) {
     return handleError(res, error);
   }
@@ -69,5 +74,5 @@ module.exports = {
   create,
   update,
   remove,
-  restore
+  restore,
 };

@@ -1,9 +1,11 @@
 const jwt = require('jsonwebtoken')
 const { pgCore: db } = require('../config/database')
 const { unauthorizedResponse, forbiddenResponse, errorResponse } = require('../utils/response')
+const { verifySsoToken } = require('./sso_token')
 
 /**
- * Autentikasi: verifikasi JWT, pastikan user masih aktif, lalu isi req.user
+ * Autentikasi: verifikasi JWT internal LMS, dengan fallback ke token SSO/sistem lain.
+ * Token SSO tidak dicek ke tabel users, langsung diberi akses penuh (lihat authorize).
  */
 const authenticate = async (req, res, next) => {
   try {
@@ -16,8 +18,21 @@ const authenticate = async (req, res, next) => {
     let decoded
     try {
       decoded = jwt.verify(token, process.env.SECRET_KEY_AUTH_JWT, { algorithms: ['HS256'] })
-    } catch (err) {
-      return unauthorizedResponse(res, 'Token tidak valid atau sudah kedaluwarsa')
+    } catch (internalErr) {
+      try {
+        decoded = verifySsoToken(token)
+      } catch (ssoErr) {
+        return unauthorizedResponse(res, 'Token tidak valid atau sudah kedaluwarsa')
+      }
+
+      req.user = {
+        id: decoded.user_id ?? decoded.employee_id ?? decoded.customer_id,
+        employee_id: decoded.employee_id,
+        customer_id: decoded.customer_id,
+        is_customer: decoded.is_customer,
+        is_sso: true
+      }
+      return next()
     }
 
     // user_id di payload token = users.id
@@ -52,6 +67,11 @@ const authorize = async (req, res, next) => {
   try {
     if (!req.user) {
       return unauthorizedResponse(res, 'Token wajib diisi')
+    }
+
+    // Token dari SSO/sistem lain: akses penuh ke semua permission
+    if (req.user.is_sso) {
+      return next()
     }
 
     const routePath = req.route.path === '/' ? '' : req.route.path
