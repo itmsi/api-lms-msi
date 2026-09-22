@@ -21,7 +21,9 @@ const resources = [
   { key: 'roles', label: 'Role', endpoint: `${API_PREFIX}/roles` },
   { key: 'permissions', label: 'Hak Akses', endpoint: `${API_PREFIX}/permissions` },
   { key: 'users', label: 'User', endpoint: `${API_PREFIX}/users` },
-  { key: 'examples', label: 'Example', endpoint: `${API_PREFIX}/examples` }
+  { key: 'examples', label: 'Example', endpoint: `${API_PREFIX}/examples` },
+  { key: 'modules', label: 'Module', endpoint: `${API_PREFIX}/modules` },
+  { key: 'chapters', label: 'Chapter', endpoint: `${API_PREFIX}/chapters` }
 ];
 
 const actions = [
@@ -55,8 +57,12 @@ const rolePermissionMap = {
   admin: permissions
     .map((p) => p.code)
     .filter((c) => !['permissions.create', 'permissions.update', 'permissions.delete', 'permissions.restore', 'roles.delete', 'roles.restore'].includes(c)),
-  instruktur: ['roles.read', 'roles.detail', 'users.read', 'users.detail', 'examples.read', 'examples.detail'],
-  participant: []
+  instruktur: [
+    'roles.read', 'roles.detail', 'users.read', 'users.detail', 'examples.read', 'examples.detail',
+    'modules.read', 'modules.detail', 'modules.create', 'modules.update', 'modules.delete', 'modules.restore',
+    'chapters.read', 'chapters.detail', 'chapters.create', 'chapters.update', 'chapters.delete', 'chapters.restore'
+  ],
+  participant: ['modules.read', 'modules.detail', 'chapters.read', 'chapters.detail']
 };
 
 const users = [

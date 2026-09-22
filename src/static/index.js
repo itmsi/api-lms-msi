@@ -30,6 +30,8 @@ const authSchema = require("./schema/auth");
 const roleSchema = require("./schema/role");
 const permissionSchema = require("./schema/permission");
 const userSchema = require("./schema/user");
+const modulSchema = require("./schema/modul");
+const chapterSchema = require("./schema/chapter");
 
 // Import paths
 // Tambahkan path module Anda di sini
@@ -38,6 +40,8 @@ const authPaths = require("./path/auth");
 const rolePaths = require("./path/role");
 const permissionPaths = require("./path/permission");
 const userPaths = require("./path/user");
+const modulPaths = require("./path/modul");
+const chapterPaths = require("./path/chapter");
 
 // Combine all schemas
 const schemas = {
@@ -47,6 +51,8 @@ const schemas = {
   ...roleSchema,
   ...permissionSchema,
   ...userSchema,
+  ...modulSchema,
+  ...chapterSchema,
   // ...yourModuleSchema,
 };
 
@@ -57,6 +63,8 @@ const paths = {
   ...rolePaths,
   ...permissionPaths,
   ...userPaths,
+  ...modulPaths,
+  ...chapterPaths,
   // ...yourModulePaths,
 };
 
