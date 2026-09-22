@@ -17,8 +17,12 @@ const servers = [
     description: "Development server",
   },
   {
-    url: "https://production-url.com/api/lms/",
+    url: "https://gateway.motorsights.com/api/netsuite",
     description: "Production server",
+  },
+  {
+    url: "https://dev-gateway.motorsights.com/api/netsuite",
+    description: "Develop server",
   },
 ];
 
@@ -58,11 +62,11 @@ const schemas = {
 
 // Combine all paths
 const paths = {
-  ...examplePaths,
-  ...authPaths,
-  ...rolePaths,
-  ...permissionPaths,
-  ...userPaths,
+  // ...examplePaths,
+  // ...authPaths,
+  // ...rolePaths,
+  // ...permissionPaths,
+  // ...userPaths,
   ...modulPaths,
   ...chapterPaths,
   // ...yourModulePaths,
