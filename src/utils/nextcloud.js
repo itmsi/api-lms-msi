@@ -183,11 +183,11 @@ const generateShareLinkPrivate = async (path) => {
  *
  * shareType yang tersedia di Nextcloud OCS Share API:
  * - 0 = user tertentu
- * - 1 = grup
+ * - 1 = grup (kekuranganya harus add user ke group itu sendiri)
  * - 3 = public link (tanpa login sama sekali, dipakai generateShareLink)
  * - 4 = email
  * - 6 = federated (user Nextcloud instance lain)
- * - 7 = circle (kalau app Circles aktif)
+ * - 7 = circle (kalau app Circles aktif) mirip kaya group tapi ini fitur Circles di nexcloudnya
  *
  * @param {string} path Path to the file in Nextcloud
  * @returns {string} Internal file URL yang bisa diakses semua akun Nextcloud
