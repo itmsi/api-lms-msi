@@ -19,7 +19,12 @@ const modulPaths = {
       tags: ['Modules'],
       summary: 'Get all modules',
       description: 'Retrieve all modules with pagination, sorting, and search',
-      requestBody: { required: false, content: json(listRequest(SORT_BY)) },
+      requestBody: {
+        required: false,
+        content: json(listRequest(SORT_BY, 'created_at', 'desc', {
+          module_category: { type: 'string', enum: ['mt', 'nonmt', 'division'], description: 'Filter berdasarkan kategori module', example: 'mt' }
+        }))
+      },
       responses: {
         ...authErrors,
         200: { description: 'Success', content: json(envelope(paginated('Modul'), 'Success')) }

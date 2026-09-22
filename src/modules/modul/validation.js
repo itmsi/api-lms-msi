@@ -31,6 +31,13 @@ const linkMaterialsBody = body('link_materials')
   .withMessage('link_materials harus berupa array link')
   .bail();
 
+const MODULE_CATEGORIES = ['mt', 'nonmt', 'division'];
+
+const moduleCategoryBody = body('module_category')
+  .optional({ nullable: true, checkFalsy: true })
+  .isIn(MODULE_CATEGORIES)
+  .withMessage(`module_category harus salah satu dari ${MODULE_CATEGORIES.join(', ')}`);
+
 const createValidation = [
   body('title')
     .notEmpty()
@@ -48,6 +55,7 @@ const createValidation = [
     .optional()
     .isURL()
     .withMessage('Setiap link_materials harus berupa URL yang valid'),
+  moduleCategoryBody,
 ];
 
 const updateValidation = [
@@ -67,6 +75,7 @@ const updateValidation = [
     .optional()
     .isURL()
     .withMessage('Setiap link_materials harus berupa URL yang valid'),
+  moduleCategoryBody,
   body('banner_delete')
     .optional()
     .isBoolean()
@@ -100,6 +109,7 @@ const listValidation = [
     .withMessage('Search harus berupa teks')
     .isLength({ max: 100 })
     .withMessage('Search maksimal 100 karakter'),
+  moduleCategoryBody,
 ];
 
 module.exports = {

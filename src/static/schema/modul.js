@@ -9,6 +9,7 @@ const modulSchemas = {
       id: { type: 'string', format: 'uuid', description: 'Unique identifier', example: '123e4567-e89b-12d3-a456-426614174000' },
       title: { type: 'string', nullable: true, description: 'Judul module', example: 'Pengenalan JavaScript' },
       description: { type: 'string', nullable: true, description: 'Deskripsi module', example: 'Materi dasar bahasa pemrograman JavaScript' },
+      module_category: { type: 'string', nullable: true, enum: ['mt', 'nonmt', 'division'], description: 'Kategori module', example: 'mt' },
       link_materials: {
         type: 'array',
         nullable: true,
@@ -47,6 +48,7 @@ const modulSchemas = {
     properties: {
       title: { type: 'string', minLength: 3, maxLength: 255, example: 'Pengenalan JavaScript' },
       description: { type: 'string', maxLength: 2000, example: 'Materi dasar bahasa pemrograman JavaScript' },
+      module_category: { type: 'string', nullable: true, enum: ['mt', 'nonmt', 'division'], example: 'mt' },
       link_materials: {
         type: 'string',
         description: 'Daftar link materi (dikirim via multipart/form-data), boleh string JSON array atau list dipisah koma',

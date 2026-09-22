@@ -23,6 +23,7 @@ const findAll = async (params = {}) => {
 
   const base = () => {
     const q = db(TABLE_NAME).where({ is_delete: false });
+    if (params.module_category) q.andWhere('module_category', params.module_category);
     if (search) {
       q.andWhere((b) => b
         .whereILike('title', `%${search}%`)

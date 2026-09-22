@@ -5,7 +5,7 @@ const { client, ensureDirectoryExists, generateShareLink, NEXTCLOUD_UPLOAD_DIR }
 
 // 'banner' sengaja tidak masuk FIELDS: nilainya hanya boleh diisi lewat upload file
 // (lihat uploadBanner) atau dikosongkan lewat flag banner_delete, bukan langsung dari body.
-const FIELDS = ['title', 'description', 'link_materials'];
+const FIELDS = ['title', 'description', 'link_materials', 'module_category'];
 
 // hanya field yang diizinkan yang boleh masuk ke database (cegah mass-assignment kolom audit)
 const pick = (data = {}) => Object.fromEntries(
