@@ -33,9 +33,9 @@ const modulPaths = {
           listRequest(SORT_BY, "created_at", "desc", {
             module_category: {
               type: "string",
-              enum: ["mt", "nonmt", "division"],
+              enum: ["mt", "reguler"],
               description: "Filter berdasarkan kategori module",
-              example: "mt",
+              example: "reguler",
             },
             created_by: {
               type: "string",
