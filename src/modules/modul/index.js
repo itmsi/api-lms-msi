@@ -5,7 +5,10 @@ const {
   createValidation,
   updateValidation,
   getByIdValidation,
-  listValidation
+  listValidation,
+  createAllValidation,
+  updateAllValidation,
+  deleteAllValidation
 } = require('./validation');
 const { validateMiddleware } = require('../../middlewares/validation');
 const { authenticate, authorize } = require('../../middlewares/auth');
@@ -24,6 +27,32 @@ router.post(
   listValidation,
   validateMiddleware,
   controller.getAll
+);
+
+/**
+ * @route   POST /api/modules/get-list
+ * @desc    Get all modules with pagination (sama seperti /get)
+ * @access  Protected (hak akses modules.*)
+ */
+router.post(
+  '/get-list',
+  authorize,
+  listValidation,
+  validateMiddleware,
+  controller.getAll
+);
+
+/**
+ * @route   GET /api/modules/get/:id
+ * @desc    Get module by ID beserta daftar chapter-nya (sama seperti GET /:id)
+ * @access  Protected (hak akses modules.*)
+ */
+router.get(
+  '/get/:id',
+  authorize,
+  getByIdValidation,
+  validateMiddleware,
+  controller.getById
 );
 
 /**
@@ -91,6 +120,49 @@ router.post(
   getByIdValidation,
   validateMiddleware,
   controller.restore
+);
+
+/**
+ * @route   POST /api/modules/create-all
+ * @desc    Create module + chapters sekaligus (multipart/form-data, field file: banner,
+ *          field chapters: string JSON array chapter)
+ * @access  Protected (hak akses modules.*)
+ */
+router.post(
+  '/create-all',
+  authorize,
+  handleBannerUpload,
+  createAllValidation,
+  validateMiddleware,
+  controller.createAll
+);
+
+/**
+ * @route   PUT /api/modules/update-all/:id
+ * @desc    Update module + upsert chapters sekaligus (multipart/form-data, field file: banner
+ *          opsional, field chapters: string JSON array chapter, item ber-id = update, tanpa id = chapter baru)
+ * @access  Protected (hak akses modules.*)
+ */
+router.put(
+  '/update-all/:id',
+  authorize,
+  handleBannerUpload,
+  updateAllValidation,
+  validateMiddleware,
+  controller.updateAll
+);
+
+/**
+ * @route   DELETE /api/modules/delete-all/:id
+ * @desc    Soft delete module beserta seluruh chapter-nya sekaligus
+ * @access  Protected (hak akses modules.*)
+ */
+router.delete(
+  '/delete-all/:id',
+  authorize,
+  deleteAllValidation,
+  validateMiddleware,
+  controller.removeAll
 );
 
 module.exports = router;

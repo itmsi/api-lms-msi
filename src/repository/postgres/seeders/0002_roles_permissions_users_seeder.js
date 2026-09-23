@@ -70,6 +70,45 @@ permissions.push({
   description: "Mengatur daftar hak akses pada sebuah role",
 });
 
+// Hak akses tambahan: endpoint gabungan module + chapter
+permissions.push(
+  {
+    code: "modules.get-list",
+    name: "Lihat daftar Module (get-list)",
+    method: "POST",
+    endpoint: `${API_PREFIX}/modules/get-list`,
+    description: "Lihat daftar data Module (sama seperti modules.read)",
+  },
+  {
+    code: "modules.get-detail",
+    name: "Lihat detail Module beserta chapter (get)",
+    method: "GET",
+    endpoint: `${API_PREFIX}/modules/get/:id`,
+    description: "Lihat detail Module beserta chapter (sama seperti modules.detail)",
+  },
+  {
+    code: "modules.create-all",
+    name: "Tambah Module beserta chapter",
+    method: "POST",
+    endpoint: `${API_PREFIX}/modules/create-all`,
+    description: "Membuat Module beserta chapter sekaligus dalam satu request",
+  },
+  {
+    code: "modules.update-all",
+    name: "Ubah Module beserta chapter",
+    method: "PUT",
+    endpoint: `${API_PREFIX}/modules/update-all/:id`,
+    description: "Mengubah Module beserta chapter sekaligus dalam satu request",
+  },
+  {
+    code: "modules.delete-all",
+    name: "Hapus Module beserta chapter",
+    method: "DELETE",
+    endpoint: `${API_PREFIX}/modules/delete-all/:id`,
+    description: "Soft delete Module beserta seluruh chapter-nya sekaligus",
+  },
+);
+
 const rolePermissionMap = {
   "super-admin": permissions.map((p) => p.code),
   admin: permissions
@@ -98,6 +137,11 @@ const rolePermissionMap = {
     "modules.update",
     "modules.delete",
     "modules.restore",
+    "modules.get-list",
+    "modules.get-detail",
+    "modules.create-all",
+    "modules.update-all",
+    "modules.delete-all",
     "chapters.read",
     "chapters.detail",
     "chapters.create",
@@ -108,6 +152,8 @@ const rolePermissionMap = {
   participant: [
     "modules.read",
     "modules.detail",
+    "modules.get-list",
+    "modules.get-detail",
     "chapters.read",
     "chapters.detail",
   ],

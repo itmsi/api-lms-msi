@@ -27,7 +27,6 @@ const modulSchemas = {
       module_category: {
         type: "string",
         nullable: true,
-        enum: ["mt", "reguler"],
         description: "Kategori module",
         example: "reguler",
       },
@@ -124,7 +123,6 @@ const modulSchemas = {
       module_category: {
         type: "string",
         nullable: true,
-        enum: ["mt", "reguler"],
         example: "reguler",
       },
       link_materials: {
@@ -145,6 +143,159 @@ const modulSchemas = {
         default: false,
         description:
           "Hanya berlaku pada update. Jika true, hapus banner yang ada (banner jadi null). Jika false/tidak dikirim dan tidak ada file baru, banner lama tetap dipertahankan.",
+      },
+    },
+  },
+  ChapterAllInput: {
+    type: "object",
+    properties: {
+      id: {
+        type: "string",
+        format: "uuid",
+        nullable: true,
+        description:
+          "Isi dengan id chapter yang sudah ada untuk meng-update chapter tersebut. Kosongkan (string kosong) untuk membuat chapter baru.",
+        example: "",
+      },
+      line: {
+        type: "integer",
+        minimum: 0,
+        default: 0,
+        description: "Urutan tampil chapter",
+        example: 1,
+      },
+      title: {
+        type: "string",
+        minLength: 3,
+        maxLength: 255,
+        description: "Wajib diisi untuk chapter baru (tanpa id)",
+        example: "Variabel dan Tipe Data",
+      },
+      description: {
+        type: "string",
+        maxLength: 2000,
+        example: "Mengenal variabel, tipe data, dan operator di JavaScript",
+      },
+      link_materials: {
+        type: "array",
+        items: { type: "string", format: "uri" },
+        example: ["https://example.com/chapter-1-materi.pdf"],
+      },
+    },
+  },
+  ModulCreateAllInput: {
+    type: "object",
+    required: ["title"],
+    properties: {
+      title: {
+        type: "string",
+        minLength: 3,
+        maxLength: 255,
+        example: "Pengenalan JavaScript",
+      },
+      description: {
+        type: "string",
+        maxLength: 2000,
+        example: "Materi dasar bahasa pemrograman JavaScript",
+      },
+      module_category: {
+        type: "string",
+        nullable: true,
+        example: "reguler",
+      },
+      link_materials: {
+        type: "string",
+        description:
+          "Daftar link materi (dikirim via multipart/form-data), boleh string JSON array atau list dipisah koma",
+        example:
+          "https://example.com/materi-1.pdf,https://example.com/materi-2.pdf",
+      },
+      banner: {
+        type: "string",
+        format: "binary",
+        description: "File gambar banner (jpg/jpeg/png/webp/gif, maksimal 5MB)",
+      },
+      chapters: {
+        type: "string",
+        description:
+          "Daftar chapter, dikirim via multipart/form-data sebagai string JSON array of ChapterAllInput. Semua item dianggap chapter baru (id dikosongkan).",
+        example: JSON.stringify([
+          {
+            id: "",
+            line: 1,
+            title: "Variabel dan Tipe Data",
+            description: "Mengenal variabel",
+            link_materials: ["https://example.com/chapter-1-materi.pdf"],
+          },
+          {
+            id: "",
+            line: 2,
+            title: "Variabel dan Tipe Data",
+            description: "Mengenal variabel",
+            link_materials: ["https://example.com/chapter-1-materi.pdf"],
+          },
+        ]),
+      },
+    },
+  },
+  ModulUpdateAllInput: {
+    type: "object",
+    properties: {
+      title: {
+        type: "string",
+        minLength: 3,
+        maxLength: 255,
+        example: "Pengenalan JavaScript",
+      },
+      description: {
+        type: "string",
+        maxLength: 2000,
+        example: "Materi dasar bahasa pemrograman JavaScript",
+      },
+      module_category: {
+        type: "string",
+        nullable: true,
+        example: "reguler",
+      },
+      link_materials: {
+        type: "string",
+        description:
+          "Daftar link materi (dikirim via multipart/form-data), boleh string JSON array atau list dipisah koma",
+        example:
+          "https://example.com/materi-1.pdf,https://example.com/materi-2.pdf",
+      },
+      banner: {
+        type: "string",
+        format: "binary",
+        description:
+          "File gambar banner baru (opsional). Jika dikirim, selalu menggantikan banner lama.",
+      },
+      banner_delete: {
+        type: "boolean",
+        default: false,
+        description:
+          "Jika true, hapus banner yang ada (banner jadi null), diabaikan jika ada file banner baru.",
+      },
+      chapters: {
+        type: "string",
+        description:
+          "Daftar chapter, dikirim via multipart/form-data sebagai string JSON array of ChapterAllInput. Item ber-`id` akan di-update, item dengan `id` kosong (\"\") akan dibuat sebagai chapter baru. Chapter lama yang tidak disertakan TIDAK dihapus.",
+        example: JSON.stringify([
+          {
+            id: "223e4567-e89b-12d3-a456-426614174000",
+            line: 1,
+            title: "Variabel dan Tipe Data",
+            description: "Mengenal variabel",
+            link_materials: ["https://example.com/chapter-1-materi.pdf"],
+          },
+          {
+            id: "",
+            line: 2,
+            title: "Variabel dan Tipe Data",
+            description: "Mengenal variabel",
+            link_materials: ["https://example.com/chapter-1-materi.pdf"],
+          },
+        ]),
       },
     },
   },

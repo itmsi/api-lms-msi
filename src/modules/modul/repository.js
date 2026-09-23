@@ -83,10 +83,10 @@ const findById = async (id) => {
     .first();
 };
 
-const findChapters = async (moduleId) => {
-  return await db("chapters")
+const findChapters = async (moduleId, trx = db) => {
+  return await trx("chapters")
     .where({ modules_id: moduleId, is_delete: false })
-    .orderBy("created_at", "asc");
+    .orderBy([{ column: "line", order: "asc" }, { column: "created_at", order: "asc" }]);
 };
 
 const create = async (data, actorId = null) => {
@@ -132,6 +132,108 @@ const restore = async (id, actorId = null) => {
   return result;
 };
 
+/**
+ * Create module + chapters sekaligus dalam satu transaksi (endpoint /create-all)
+ */
+const createWithChapters = async (data, chapters = [], actorId = null) => {
+  return await db.transaction(async (trx) => {
+    const [modul] = await trx(TABLE_NAME)
+      .insert({
+        ...data,
+        created_by: actorId,
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      })
+      .returning("*");
+
+    let insertedChapters = [];
+    if (chapters.length > 0) {
+      insertedChapters = await trx("chapters")
+        .insert(
+          chapters.map((chapter) => ({
+            ...chapter,
+            modules_id: modul.id,
+            created_by: actorId,
+            created_at: trx.fn.now(),
+            updated_at: trx.fn.now(),
+          })),
+        )
+        .returning("*");
+    }
+
+    return { ...modul, chapters: insertedChapters };
+  });
+};
+
+/**
+ * Update module + upsert chapters sekaligus dalam satu transaksi (endpoint /update-all/:id)
+ * chapters yang punya `id` di-update, yang tidak punya `id` dibuat sebagai chapter baru
+ */
+const updateWithChapters = async (id, data, chapters = null, actorId = null) => {
+  return await db.transaction(async (trx) => {
+    const [modul] = await trx(TABLE_NAME)
+      .where({ id, is_delete: false })
+      .update({ ...data, updated_by: actorId, updated_at: trx.fn.now() })
+      .returning("*");
+
+    if (!modul) return null;
+
+    if (Array.isArray(chapters)) {
+      for (const chapter of chapters) {
+        const { id: chapterId, ...chapterData } = chapter;
+        if (chapterId) {
+          await trx("chapters")
+            .where({ id: chapterId, modules_id: id, is_delete: false })
+            .update({
+              ...chapterData,
+              updated_by: actorId,
+              updated_at: trx.fn.now(),
+            });
+        } else {
+          await trx("chapters").insert({
+            ...chapterData,
+            modules_id: id,
+            created_by: actorId,
+            created_at: trx.fn.now(),
+            updated_at: trx.fn.now(),
+          });
+        }
+      }
+    }
+
+    const refreshedChapters = await findChapters(id, trx);
+    return { ...modul, chapters: refreshedChapters };
+  });
+};
+
+/**
+ * Soft delete module + seluruh chapter-nya sekaligus dalam satu transaksi (endpoint /delete-all/:id)
+ */
+const removeWithChapters = async (id, actorId = null) => {
+  return await db.transaction(async (trx) => {
+    const [modul] = await trx(TABLE_NAME)
+      .where({ id, is_delete: false })
+      .update({
+        is_delete: true,
+        deleted_at: trx.fn.now(),
+        deleted_by: actorId,
+      })
+      .returning("*");
+
+    if (!modul) return null;
+
+    await trx("chapters")
+      .where({ modules_id: id, is_delete: false })
+      .update({
+        is_delete: true,
+        deleted_at: trx.fn.now(),
+        deleted_by: actorId,
+      });
+
+    return modul;
+  });
+};
+
 module.exports = {
   findAll,
   findById,
@@ -140,4 +242,7 @@ module.exports = {
   update,
   remove,
   restore,
+  createWithChapters,
+  updateWithChapters,
+  removeWithChapters,
 };

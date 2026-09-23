@@ -67,11 +67,43 @@ const restore = async (req, res) => {
   }
 };
 
+const createAll = async (req, res) => {
+  try {
+    const data = await service.createItemWithChapters(req.body, req.file, req.user.id);
+    return successResponse(res, data, 'Data berhasil dibuat', 201);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const updateAll = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await service.updateItemWithChapters(id, req.body, req.file, req.user.id);
+    return successResponse(res, data, 'Data berhasil diupdate');
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const removeAll = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await service.deleteItemWithChapters(id, req.user.id);
+    return successResponse(res, null, 'Data berhasil dihapus');
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 module.exports = {
   getAll,
   getById,
   create,
   update,
   remove,
-  restore
+  restore,
+  createAll,
+  updateAll,
+  removeAll
 };

@@ -18,6 +18,22 @@ const pick = (data = {}) => Object.fromEntries(
 
 const BANNER_DIR = `${NEXTCLOUD_UPLOAD_DIR}/modules`;
 
+const CHAPTER_FIELDS = ['title', 'description', 'link_materials', 'line'];
+
+// hanya field yang diizinkan yang boleh masuk ke database (cegah mass-assignment kolom audit)
+// `id` sengaja dipertahankan (bukan lewat pick) untuk menentukan update vs create chapter baru
+const pickChapter = (data = {}) => Object.fromEntries(
+  CHAPTER_FIELDS.filter((k) => data[k] !== undefined).map((k) => [
+    k,
+    k === 'link_materials' ? JSON.stringify(data[k]) : data[k]
+  ])
+);
+
+const pickChapters = (chapters = []) => chapters.map((chapter) => ({
+  ...(chapter.id ? { id: chapter.id } : {}),
+  ...pickChapter(chapter)
+}));
+
 /**
  * Service Layer - Business Logic (modul)
  */
@@ -97,11 +113,61 @@ const restoreItem = async (id, actorId) => {
   return data;
 };
 
+const createItemWithChapters = async (itemData, file, actorId) => {
+  const payload = pick(itemData);
+
+  if (file) {
+    payload.banner = await uploadBanner(file);
+  }
+
+  const chapters = pickChapters(itemData.chapters || []);
+
+  return await repository.createWithChapters(payload, chapters, actorId);
+};
+
+const updateItemWithChapters = async (id, itemData, file, actorId) => {
+  const existingItem = await repository.findById(id);
+  if (!existingItem) {
+    throw { message: 'Data tidak ditemukan', statusCode: 404 };
+  }
+
+  const payload = pick(itemData);
+
+  if (file) {
+    // upload file baru selalu menang, mengabaikan banner_delete
+    payload.banner = await uploadBanner(file);
+  } else if (itemData.banner_delete === true) {
+    payload.banner = null;
+  }
+
+  const chapters = itemData.chapters !== undefined ? pickChapters(itemData.chapters) : null;
+
+  const data = await repository.updateWithChapters(id, payload, chapters, actorId);
+
+  if (!data) {
+    throw { message: 'Data tidak ditemukan', statusCode: 404 };
+  }
+
+  return data;
+};
+
+const deleteItemWithChapters = async (id, actorId) => {
+  const existingItem = await repository.findById(id);
+  if (!existingItem) {
+    throw { message: 'Data tidak ditemukan', statusCode: 404 };
+  }
+
+  return await repository.removeWithChapters(id, actorId);
+};
+
 module.exports = {
   getAllItems,
   getItemById,
   createItem,
   updateItem,
   deleteItem,
-  restoreItem
+  restoreItem,
+  createItemWithChapters,
+  updateItemWithChapters,
+  deleteItemWithChapters
 };
