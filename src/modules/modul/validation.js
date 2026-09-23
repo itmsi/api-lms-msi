@@ -110,6 +110,14 @@ const listValidation = [
     .isLength({ max: 100 })
     .withMessage('Search maksimal 100 karakter'),
   moduleCategoryBody,
+  body('created_by')
+    .customSanitizer((value) => {
+      if (typeof value === 'string' && ['', 'null', 'nan'].includes(value.trim().toLowerCase())) return null;
+      return value;
+    })
+    .optional({ nullable: true, checkFalsy: true })
+    .isUUID()
+    .withMessage('created_by harus berupa UUID yang valid'),
 ];
 
 module.exports = {

@@ -24,6 +24,7 @@ const findAll = async (params = {}) => {
   const base = () => {
     const q = db(TABLE_NAME).where({ is_delete: false });
     if (params.module_category) q.andWhere('module_category', params.module_category);
+    if (params.created_by) q.andWhere('created_by', params.created_by);
     if (search) {
       q.andWhere((b) => b
         .whereILike('title', `%${search}%`)
