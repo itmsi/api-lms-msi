@@ -4,6 +4,7 @@ require('dotenv').config()
 
 const app = express()
 const compress = require('compression')
+const cors = require('cors')
 const methodOverride = require('method-override')
 const xss = require('xss-clean')
 const morgan = require('morgan')
@@ -15,6 +16,7 @@ const {
   syntaxError,
 } = require('./utils')
 
+const { corsOptions } = require('./utils/cors')
 const healthCheck = require('./routes')
 const apiV1 = require('./routes/V1')
 const { initListener } = require('./listeners')
@@ -30,6 +32,9 @@ if (process.env.RABBITMQ_ENABLED === 'true' && process.env.RABBITMQ_URL && proce
 
 const limit = process.env.JSON_LIMIT || '1gb'
 app.set('trust proxy', 1);
+if (process.env.CORS_ENABLED !== 'false') {
+  app.use(cors(corsOptions)) // CORS (origin dari CORS_ORIGINS), juga menangani preflight OPTIONS
+}
 app.use(compress()) // gzip compression
 app.use(methodOverride()) // lets you use HTTP verbs
 app.use(xss()) // handler xss attack

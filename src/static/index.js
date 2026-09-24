@@ -17,8 +17,12 @@ const servers = [
     description: "Development server",
   },
   {
-    url: "https://production-url.com/api/lms/",
+    url: "https://gateway.motorsights.com/api/netsuite",
     description: "Production server",
+  },
+  {
+    url: "https://dev-gateway.motorsights.com/api/netsuite",
+    description: "Develop server",
   },
 ];
 
@@ -30,6 +34,8 @@ const authSchema = require("./schema/auth");
 const roleSchema = require("./schema/role");
 const permissionSchema = require("./schema/permission");
 const userSchema = require("./schema/user");
+const modulSchema = require("./schema/modul");
+const chapterSchema = require("./schema/chapter");
 
 // Import paths
 // Tambahkan path module Anda di sini
@@ -38,6 +44,8 @@ const authPaths = require("./path/auth");
 const rolePaths = require("./path/role");
 const permissionPaths = require("./path/permission");
 const userPaths = require("./path/user");
+const modulPaths = require("./path/modul");
+const chapterPaths = require("./path/chapter");
 
 // Combine all schemas
 const schemas = {
@@ -47,16 +55,20 @@ const schemas = {
   ...roleSchema,
   ...permissionSchema,
   ...userSchema,
+  ...modulSchema,
+  ...chapterSchema,
   // ...yourModuleSchema,
 };
 
 // Combine all paths
 const paths = {
-  ...examplePaths,
-  ...authPaths,
-  ...rolePaths,
-  ...permissionPaths,
-  ...userPaths,
+  // ...examplePaths,
+  // ...authPaths,
+  // ...rolePaths,
+  // ...permissionPaths,
+  // ...userPaths,
+  ...modulPaths,
+  ...chapterPaths,
   // ...yourModulePaths,
 };
 
