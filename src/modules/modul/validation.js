@@ -31,6 +31,12 @@ const linkMaterialsBody = body('link_materials')
   .withMessage('link_materials harus berupa array link')
   .bail();
 
+const descriptionCleanBody = body('description_clean')
+  .optional({ nullable: true })
+  .isString()
+  .withMessage('description_clean harus berupa teks')
+  .trim();
+
 const moduleCategoryBody = body('module_category')
   .optional({ nullable: true, checkFalsy: true })
   .isString()
@@ -51,6 +57,7 @@ const createValidation = [
     .isLength({ max: 2000 })
     .withMessage('Deskripsi maksimal 2000 karakter')
     .trim(),
+  descriptionCleanBody,
   linkMaterialsBody,
   body('link_materials.*')
     .optional()
@@ -71,6 +78,7 @@ const updateValidation = [
     .isLength({ max: 2000 })
     .withMessage('Deskripsi maksimal 2000 karakter')
     .trim(),
+  descriptionCleanBody,
   linkMaterialsBody,
   body('link_materials.*')
     .optional()
@@ -149,6 +157,7 @@ const createAllValidation = [
     .isLength({ max: 2000 })
     .withMessage('Deskripsi maksimal 2000 karakter')
     .trim(),
+  descriptionCleanBody,
   linkMaterialsBody,
   body('link_materials.*')
     .optional()
@@ -170,6 +179,7 @@ const updateAllValidation = [
     .isLength({ max: 2000 })
     .withMessage('Deskripsi maksimal 2000 karakter')
     .trim(),
+  descriptionCleanBody,
   linkMaterialsBody,
   body('link_materials.*')
     .optional()

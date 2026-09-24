@@ -16,7 +16,26 @@ const SORTABLE = {
 const LIST_COLUMNS = [
   "id",
   "title",
+  "description_clean as description",
+  "link_materials",
+  db.raw(
+    `CASE WHEN banner IS NOT NULL AND banner <> '' THEN concat_ws('', banner, '/preview'::text) ELSE banner END as banner`,
+  ),
+  "created_at",
+  "created_by",
+  "updated_at",
+  "updated_by",
+  "deleted_at",
+  "deleted_by",
+  "is_delete",
+  "module_category",
+];
+
+const LIST_COLUMNS_DETAIL = [
+  "id",
+  "title",
   "description",
+  "description_clean",
   "link_materials",
   db.raw(
     `CASE WHEN banner IS NOT NULL AND banner <> '' THEN concat_ws('', banner, '/preview'::text) ELSE banner END as banner`,
@@ -78,7 +97,7 @@ const findAll = async (params = {}) => {
 
 const findById = async (id) => {
   return await db(TABLE_NAME)
-    .select(LIST_COLUMNS)
+    .select(LIST_COLUMNS_DETAIL)
     .where({ id, is_delete: false })
     .first();
 };
@@ -86,7 +105,10 @@ const findById = async (id) => {
 const findChapters = async (moduleId, trx = db) => {
   return await trx("chapters")
     .where({ modules_id: moduleId, is_delete: false })
-    .orderBy([{ column: "line", order: "asc" }, { column: "created_at", order: "asc" }]);
+    .orderBy([
+      { column: "line", order: "asc" },
+      { column: "created_at", order: "asc" },
+    ]);
 };
 
 const create = async (data, actorId = null) => {
@@ -169,7 +191,12 @@ const createWithChapters = async (data, chapters = [], actorId = null) => {
  * Update module + upsert chapters sekaligus dalam satu transaksi (endpoint /update-all/:id)
  * chapters yang punya `id` di-update, yang tidak punya `id` dibuat sebagai chapter baru
  */
-const updateWithChapters = async (id, data, chapters = null, actorId = null) => {
+const updateWithChapters = async (
+  id,
+  data,
+  chapters = null,
+  actorId = null,
+) => {
   return await db.transaction(async (trx) => {
     const [modul] = await trx(TABLE_NAME)
       .where({ id, is_delete: false })
@@ -222,13 +249,11 @@ const removeWithChapters = async (id, actorId = null) => {
 
     if (!modul) return null;
 
-    await trx("chapters")
-      .where({ modules_id: id, is_delete: false })
-      .update({
-        is_delete: true,
-        deleted_at: trx.fn.now(),
-        deleted_by: actorId,
-      });
+    await trx("chapters").where({ modules_id: id, is_delete: false }).update({
+      is_delete: true,
+      deleted_at: trx.fn.now(),
+      deleted_by: actorId,
+    });
 
     return modul;
   });

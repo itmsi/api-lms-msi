@@ -24,6 +24,12 @@ const modulSchemas = {
         description: "Deskripsi module",
         example: "Materi dasar bahasa pemrograman JavaScript",
       },
+      description_clean: {
+        type: "string",
+        nullable: true,
+        description: "Deskripsi module versi plain text",
+        example: "Materi dasar bahasa pemrograman JavaScript",
+      },
       module_category: {
         type: "string",
         nullable: true,
@@ -118,6 +124,13 @@ const modulSchemas = {
       description: {
         type: "string",
         maxLength: 2000,
+        description: "Deskripsi module, boleh berisi HTML",
+        example: "<p>Materi dasar bahasa pemrograman <strong>JavaScript</strong></p>",
+      },
+      description_clean: {
+        type: "string",
+        nullable: true,
+        description: "Deskripsi module versi plain text",
         example: "Materi dasar bahasa pemrograman JavaScript",
       },
       module_category: {
@@ -196,6 +209,13 @@ const modulSchemas = {
       description: {
         type: "string",
         maxLength: 2000,
+        description: "Deskripsi module, boleh berisi HTML",
+        example: "<p>Materi dasar bahasa pemrograman <strong>JavaScript</strong></p>",
+      },
+      description_clean: {
+        type: "string",
+        nullable: true,
+        description: "Deskripsi module versi plain text",
         example: "Materi dasar bahasa pemrograman JavaScript",
       },
       module_category: {
@@ -250,6 +270,13 @@ const modulSchemas = {
       description: {
         type: "string",
         maxLength: 2000,
+        description: "Deskripsi module, boleh berisi HTML",
+        example: "<p>Materi dasar bahasa pemrograman <strong>JavaScript</strong></p>",
+      },
+      description_clean: {
+        type: "string",
+        nullable: true,
+        description: "Deskripsi module versi plain text",
         example: "Materi dasar bahasa pemrograman JavaScript",
       },
       module_category: {

@@ -1,38 +1,52 @@
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const repository = require('./repository');
-const { client, ensureDirectoryExists, generateShareLink, NEXTCLOUD_UPLOAD_DIR } = require('../../utils/nextcloud');
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
+const repository = require("./repository");
+const {
+  client,
+  ensureDirectoryExists,
+  generateShareLink,
+  NEXTCLOUD_UPLOAD_DIR,
+} = require("../../utils/nextcloud");
 
 // 'banner' sengaja tidak masuk FIELDS: nilainya hanya boleh diisi lewat upload file
 // (lihat uploadBanner) atau dikosongkan lewat flag banner_delete, bukan langsung dari body.
-const FIELDS = ['title', 'description', 'link_materials', 'module_category'];
+const FIELDS = [
+  "title",
+  "description",
+  "description_clean",
+  "link_materials",
+  "module_category",
+];
 
 // hanya field yang diizinkan yang boleh masuk ke database (cegah mass-assignment kolom audit)
-const pick = (data = {}) => Object.fromEntries(
-  FIELDS.filter((k) => data[k] !== undefined).map((k) => [
-    k,
-    // kolom link_materials bertipe jsonb, node-pg butuh string JSON, bukan array JS mentah
-    k === 'link_materials' ? JSON.stringify(data[k]) : data[k]
-  ])
-);
+const pick = (data = {}) =>
+  Object.fromEntries(
+    FIELDS.filter((k) => data[k] !== undefined).map((k) => [
+      k,
+      // kolom link_materials bertipe jsonb, node-pg butuh string JSON, bukan array JS mentah
+      k === "link_materials" ? JSON.stringify(data[k]) : data[k],
+    ]),
+  );
 
 const BANNER_DIR = `${NEXTCLOUD_UPLOAD_DIR}/modules`;
 
-const CHAPTER_FIELDS = ['title', 'description', 'link_materials', 'line'];
+const CHAPTER_FIELDS = ["title", "description", "link_materials", "line"];
 
 // hanya field yang diizinkan yang boleh masuk ke database (cegah mass-assignment kolom audit)
 // `id` sengaja dipertahankan (bukan lewat pick) untuk menentukan update vs create chapter baru
-const pickChapter = (data = {}) => Object.fromEntries(
-  CHAPTER_FIELDS.filter((k) => data[k] !== undefined).map((k) => [
-    k,
-    k === 'link_materials' ? JSON.stringify(data[k]) : data[k]
-  ])
-);
+const pickChapter = (data = {}) =>
+  Object.fromEntries(
+    CHAPTER_FIELDS.filter((k) => data[k] !== undefined).map((k) => [
+      k,
+      k === "link_materials" ? JSON.stringify(data[k]) : data[k],
+    ]),
+  );
 
-const pickChapters = (chapters = []) => chapters.map((chapter) => ({
-  ...(chapter.id ? { id: chapter.id } : {}),
-  ...pickChapter(chapter)
-}));
+const pickChapters = (chapters = []) =>
+  chapters.map((chapter) => ({
+    ...(chapter.id ? { id: chapter.id } : {}),
+    ...pickChapter(chapter),
+  }));
 
 /**
  * Service Layer - Business Logic (modul)
@@ -59,7 +73,7 @@ const getItemById = async (id) => {
   const data = await repository.findById(id);
 
   if (!data) {
-    throw { message: 'Data tidak ditemukan', statusCode: 404 };
+    throw { message: "Data tidak ditemukan", statusCode: 404 };
   }
 
   const chapters = await repository.findChapters(id);
@@ -79,7 +93,7 @@ const createItem = async (itemData, file, actorId) => {
 const updateItem = async (id, itemData, file, actorId) => {
   const existingItem = await repository.findById(id);
   if (!existingItem) {
-    throw { message: 'Data tidak ditemukan', statusCode: 404 };
+    throw { message: "Data tidak ditemukan", statusCode: 404 };
   }
 
   const payload = pick(itemData);
@@ -97,7 +111,7 @@ const updateItem = async (id, itemData, file, actorId) => {
 const deleteItem = async (id, actorId) => {
   const existingItem = await repository.findById(id);
   if (!existingItem) {
-    throw { message: 'Data tidak ditemukan', statusCode: 404 };
+    throw { message: "Data tidak ditemukan", statusCode: 404 };
   }
 
   return await repository.remove(id, actorId);
@@ -107,7 +121,7 @@ const restoreItem = async (id, actorId) => {
   const data = await repository.restore(id, actorId);
 
   if (!data) {
-    throw { message: 'Data tidak ditemukan', statusCode: 404 };
+    throw { message: "Data tidak ditemukan", statusCode: 404 };
   }
 
   return data;
@@ -128,7 +142,7 @@ const createItemWithChapters = async (itemData, file, actorId) => {
 const updateItemWithChapters = async (id, itemData, file, actorId) => {
   const existingItem = await repository.findById(id);
   if (!existingItem) {
-    throw { message: 'Data tidak ditemukan', statusCode: 404 };
+    throw { message: "Data tidak ditemukan", statusCode: 404 };
   }
 
   const payload = pick(itemData);
@@ -140,12 +154,18 @@ const updateItemWithChapters = async (id, itemData, file, actorId) => {
     payload.banner = null;
   }
 
-  const chapters = itemData.chapters !== undefined ? pickChapters(itemData.chapters) : null;
+  const chapters =
+    itemData.chapters !== undefined ? pickChapters(itemData.chapters) : null;
 
-  const data = await repository.updateWithChapters(id, payload, chapters, actorId);
+  const data = await repository.updateWithChapters(
+    id,
+    payload,
+    chapters,
+    actorId,
+  );
 
   if (!data) {
-    throw { message: 'Data tidak ditemukan', statusCode: 404 };
+    throw { message: "Data tidak ditemukan", statusCode: 404 };
   }
 
   return data;
@@ -154,7 +174,7 @@ const updateItemWithChapters = async (id, itemData, file, actorId) => {
 const deleteItemWithChapters = async (id, actorId) => {
   const existingItem = await repository.findById(id);
   if (!existingItem) {
-    throw { message: 'Data tidak ditemukan', statusCode: 404 };
+    throw { message: "Data tidak ditemukan", statusCode: 404 };
   }
 
   return await repository.removeWithChapters(id, actorId);
@@ -169,5 +189,5 @@ module.exports = {
   restoreItem,
   createItemWithChapters,
   updateItemWithChapters,
-  deleteItemWithChapters
+  deleteItemWithChapters,
 };
