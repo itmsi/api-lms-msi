@@ -3,6 +3,12 @@
  */
 
 const modulSchemas = {
+  ModuleCategoryFilter: {
+    type: "array",
+    description: "Filter berdasarkan satu atau beberapa kategori module",
+    items: { type: "string", maxLength: 20 },
+    example: ["reguler", "onboarding", "mt"],
+  },
   Modul: {
     type: "object",
     properties: {
@@ -125,7 +131,8 @@ const modulSchemas = {
         type: "string",
         maxLength: 2000,
         description: "Deskripsi module, boleh berisi HTML",
-        example: "<p>Materi dasar bahasa pemrograman <strong>JavaScript</strong></p>",
+        example:
+          "<p>Materi dasar bahasa pemrograman <strong>JavaScript</strong></p>",
       },
       description_clean: {
         type: "string",
@@ -210,7 +217,8 @@ const modulSchemas = {
         type: "string",
         maxLength: 2000,
         description: "Deskripsi module, boleh berisi HTML",
-        example: "<p>Materi dasar bahasa pemrograman <strong>JavaScript</strong></p>",
+        example:
+          "<p>Materi dasar bahasa pemrograman <strong>JavaScript</strong></p>",
       },
       description_clean: {
         type: "string",
@@ -271,7 +279,8 @@ const modulSchemas = {
         type: "string",
         maxLength: 2000,
         description: "Deskripsi module, boleh berisi HTML",
-        example: "<p>Materi dasar bahasa pemrograman <strong>JavaScript</strong></p>",
+        example:
+          "<p>Materi dasar bahasa pemrograman <strong>JavaScript</strong></p>",
       },
       description_clean: {
         type: "string",
@@ -306,7 +315,7 @@ const modulSchemas = {
       chapters: {
         type: "string",
         description:
-          "Daftar chapter, dikirim via multipart/form-data sebagai string JSON array of ChapterAllInput. Item ber-`id` akan di-update, item dengan `id` kosong (\"\") akan dibuat sebagai chapter baru. Chapter lama yang tidak disertakan TIDAK dihapus.",
+          'Daftar chapter, dikirim via multipart/form-data sebagai string JSON array of ChapterAllInput. Item ber-`id` akan di-update, item dengan `id` kosong ("") akan dibuat sebagai chapter baru. Chapter lama yang tidak disertakan TIDAK dihapus.',
         example: JSON.stringify([
           {
             id: "223e4567-e89b-12d3-a456-426614174000",
