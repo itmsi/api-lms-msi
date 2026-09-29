@@ -32,9 +32,7 @@ const modulPaths = {
         content: json(
           listRequest(SORT_BY, "created_at", "desc", {
             module_category: {
-              type: "string",
-              description: "Filter berdasarkan kategori module",
-              example: "reguler",
+              $ref: "#/components/schemas/ModuleCategoryFilter",
             },
             created_by: {
               type: "string",
@@ -149,9 +147,7 @@ const modulPaths = {
         content: json(
           listRequest(SORT_BY, "created_at", "desc", {
             module_category: {
-              type: "string",
-              description: "Filter berdasarkan kategori module",
-              example: "reguler",
+              $ref: "#/components/schemas/ModuleCategoryFilter",
             },
             created_by: {
               type: "string",
