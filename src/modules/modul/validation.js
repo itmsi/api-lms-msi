@@ -71,11 +71,7 @@ const createValidation = [
     .isLength({ min: 3, max: 255 })
     .withMessage("Judul harus antara 3-255 karakter")
     .trim(),
-  body("description")
-    .optional()
-    .isLength({ max: 2000 })
-    .withMessage("Deskripsi maksimal 2000 karakter")
-    .trim(),
+  body("description").optional().trim(),
   descriptionCleanBody,
   linkMaterialsBody,
   body("link_materials.*")
@@ -92,11 +88,7 @@ const updateValidation = [
     .isLength({ min: 3, max: 255 })
     .withMessage("Judul harus antara 3-255 karakter")
     .trim(),
-  body("description")
-    .optional()
-    .isLength({ max: 2000 })
-    .withMessage("Deskripsi maksimal 2000 karakter")
-    .trim(),
+  body("description").optional().trim(),
   descriptionCleanBody,
   linkMaterialsBody,
   body("link_materials.*")
@@ -182,11 +174,7 @@ const createAllValidation = [
     .isLength({ min: 3, max: 255 })
     .withMessage("Judul harus antara 3-255 karakter")
     .trim(),
-  body("description")
-    .optional()
-    .isLength({ max: 2000 })
-    .withMessage("Deskripsi maksimal 2000 karakter")
-    .trim(),
+  body("description").optional().trim(),
   descriptionCleanBody,
   linkMaterialsBody,
   body("link_materials.*")
@@ -204,11 +192,7 @@ const updateAllValidation = [
     .isLength({ min: 3, max: 255 })
     .withMessage("Judul harus antara 3-255 karakter")
     .trim(),
-  body("description")
-    .optional()
-    .isLength({ max: 2000 })
-    .withMessage("Deskripsi maksimal 2000 karakter")
-    .trim(),
+  body("description").optional().trim(),
   descriptionCleanBody,
   linkMaterialsBody,
   body("link_materials.*")
