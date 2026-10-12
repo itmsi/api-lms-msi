@@ -2,6 +2,7 @@ const { pgCore: db } = require('../../config/database');
 const { normalizeListParams } = require('../../utils/list_params');
 
 const TABLE_NAME = 'log_activity';
+const EMPLOYEE_TABLE = 'gate_sso_employees';
 
 /**
  * Repository Layer - Database Operations (log activity)
@@ -26,6 +27,15 @@ const findAll = async (params = {}) => {
     const q = db(TABLE_NAME).where({ is_delete: false });
     if (params.modules_id) q.andWhere('modules_id', params.modules_id);
     if (params.employee_id) q.andWhere('created_by', params.employee_id);
+    // date range opsional pada created_at; end_date format YYYY-MM-DD dihitung sampai akhir hari tersebut
+    if (params.start_date) q.andWhere('created_at', '>=', params.start_date);
+    if (params.end_date) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(params.end_date)) {
+        q.andWhereRaw(`created_at < (?::date + interval '1 day')`, [params.end_date]);
+      } else {
+        q.andWhere('created_at', '<=', params.end_date);
+      }
+    }
     if (search) {
       q.andWhere((b) => b
         .whereILike('activity', `%${search}%`)
@@ -34,8 +44,15 @@ const findAll = async (params = {}) => {
     return q;
   };
 
+  // created_by_name diambil dari foreign table gate_sso_employees (FDW ke database gate_sso);
+  // pakai subquery agar jumlah baris tidak berlipat bila employee_id duplikat
   const items = await base()
-    .select('*')
+    .select(
+      `${TABLE_NAME}.*`,
+      db.raw(
+        `(select e.employee_name from ${EMPLOYEE_TABLE} e where e.employee_id = ${TABLE_NAME}.created_by limit 1) as created_by_name`
+      )
+    )
     .orderBy(sortColumn, sortOrder)
     .limit(limit)
     .offset(offset);

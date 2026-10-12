@@ -13,7 +13,9 @@ const allPaths = crudPaths({
   sortBy: ['activity', 'file_name', 'created_at', 'updated_at'],
   listProps: {
     modules_id: { type: 'string', format: 'uuid', description: 'Filter berdasarkan module', example: '123e4567-e89b-12d3-a456-426614174000' },
-    employee_id: { type: 'string', format: 'uuid', nullable: true, description: 'Filter berdasarkan employee', example: null }
+    employee_id: { type: 'string', format: 'uuid', nullable: true, description: 'Filter berdasarkan employee', example: null },
+    start_date: { type: 'string', format: 'date', nullable: true, description: 'Filter tanggal awal (created_at), format YYYY-MM-DD. Kosong = tanpa batas awal', example: '2025-01-01' },
+    end_date: { type: 'string', format: 'date', nullable: true, description: 'Filter tanggal akhir (created_at, inklusif sampai akhir hari), format YYYY-MM-DD. Kosong = tanpa batas akhir', example: '2025-12-31' }
   }
 });
 

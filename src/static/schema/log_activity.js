@@ -15,6 +15,7 @@ const logActivitySchemas = {
       updated_at: { type: 'string', format: 'date-time', example: '2025-01-01T00:00:00.000Z' },
       deleted_at: { type: 'string', format: 'date-time', nullable: true, example: null },
       created_by: { type: 'string', format: 'uuid', nullable: true, description: 'id pembuat data (bisa dari SSO)', example: null },
+      created_by_name: { type: 'string', nullable: true, description: 'Nama employee pembuat data (dari SSO), hanya ada pada response get all', example: 'Budi Santoso' },
       updated_by: { type: 'string', format: 'uuid', nullable: true, description: 'id pengubah terakhir (bisa dari SSO)', example: null },
       deleted_by: { type: 'string', format: 'uuid', nullable: true, description: 'id penghapus data (bisa dari SSO)', example: null },
       is_delete: { type: 'boolean', description: 'Penanda soft delete', example: false }
