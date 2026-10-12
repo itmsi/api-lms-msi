@@ -19,6 +19,11 @@ const createValidation = [
     .isString()
     .withMessage("file_name harus berupa teks")
     .trim(),
+  body("type")
+    .optional({ nullable: true })
+    .isString()
+    .withMessage("type harus berupa teks")
+    .trim(),
 ];
 
 const listValidation = [
