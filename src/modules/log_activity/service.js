@@ -1,6 +1,6 @@
 const repository = require('./repository');
 
-const FIELDS = ['created_by', 'modules_id', 'activity', 'file_name'];
+const FIELDS = ['created_by', 'modules_id', 'activity', 'file_name', 'type'];
 
 // hanya field yang diizinkan yang boleh masuk ke database (cegah mass-assignment kolom audit)
 const pick = (data = {}) => Object.fromEntries(
