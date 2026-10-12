@@ -54,6 +54,10 @@ const listValidation = [
     .optional({ nullable: true, checkFalsy: true })
     .isUUID()
     .withMessage("Format modules_id tidak valid"),
+  body("employee_id")
+    .optional({ nullable: true, checkFalsy: true })
+    .isUUID()
+    .withMessage("Format employee_id tidak valid"),
 ];
 
 module.exports = {
