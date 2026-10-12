@@ -28,12 +28,14 @@ const permissionModule = require("../../modules/permissions");
 const userModule = require("../../modules/users");
 const modulModule = require("../../modules/modul");
 const chapterModule = require("../../modules/chapter");
+const logActivityModule = require("../../modules/log_activity");
 routing.use(`${API_TAG}/auth`, authModule);
 routing.use(`${API_TAG}/roles`, roleModule);
 routing.use(`${API_TAG}/permissions`, permissionModule);
 routing.use(`${API_TAG}/users`, userModule);
 routing.use(`${API_TAG}/modules`, modulModule);
 routing.use(`${API_TAG}/chapters`, chapterModule);
+routing.use(`${API_TAG}/log-activity`, logActivityModule);
 
 // Tambahkan routes module Anda di sini
 // Example:
