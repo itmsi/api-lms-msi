@@ -11,6 +11,7 @@ exports.up = function(knex) {
 
     table.text('activity').nullable();
     table.text('file_name').nullable();
+    table.text('type').nullable();
 
     table.timestamp('created_at').defaultTo(knex.fn.now());
     table.uuid('created_by').nullable();
