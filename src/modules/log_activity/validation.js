@@ -58,6 +58,21 @@ const listValidation = [
     .optional({ nullable: true, checkFalsy: true })
     .isUUID()
     .withMessage("Format employee_id tidak valid"),
+  body("start_date")
+    .optional({ nullable: true, checkFalsy: true })
+    .isISO8601()
+    .withMessage("Format start_date tidak valid (gunakan YYYY-MM-DD)"),
+  body("end_date")
+    .optional({ nullable: true, checkFalsy: true })
+    .isISO8601()
+    .withMessage("Format end_date tidak valid (gunakan YYYY-MM-DD)")
+    .custom((value, { req }) => {
+      const start = req.body.start_date;
+      if (start && new Date(value) < new Date(start)) {
+        throw new Error("end_date tidak boleh lebih kecil dari start_date");
+      }
+      return true;
+    }),
 ];
 
 module.exports = {
