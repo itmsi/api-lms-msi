@@ -12,7 +12,8 @@ const allPaths = crudPaths({
   updateInput: 'LogActivityInput',
   sortBy: ['activity', 'file_name', 'created_at', 'updated_at'],
   listProps: {
-    modules_id: { type: 'string', format: 'uuid', description: 'Filter berdasarkan module', example: '123e4567-e89b-12d3-a456-426614174000' }
+    modules_id: { type: 'string', format: 'uuid', description: 'Filter berdasarkan module', example: '123e4567-e89b-12d3-a456-426614174000' },
+    employee_id: { type: 'string', format: 'uuid', nullable: true, description: 'Filter berdasarkan employee', example: null }
   }
 });
 
