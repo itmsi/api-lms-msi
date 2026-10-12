@@ -40,6 +40,8 @@ const resources = [
   { key: "examples", label: "Example", endpoint: `${API_PREFIX}/examples` },
   { key: "modules", label: "Module", endpoint: `${API_PREFIX}/modules` },
   { key: "chapters", label: "Chapter", endpoint: `${API_PREFIX}/chapters` },
+  { key: "log-activity", label: "Log Activity", endpoint: `${API_PREFIX}/log-activity`, only: ["read", "create"],
+  },
 ];
 
 const actions = [
@@ -52,13 +54,15 @@ const actions = [
 ];
 
 const permissions = resources.flatMap((r) =>
-  actions.map((a) => ({
-    code: `${r.key}.${a.key}`,
-    name: `${a.label} ${r.label}`,
-    method: a.method,
-    endpoint: `${r.endpoint}${a.suffix}`,
-    description: `${a.label} data ${r.label}`,
-  })),
+  actions
+    .filter((a) => !r.only || r.only.includes(a.key))
+    .map((a) => ({
+      code: `${r.key}.${a.key}`,
+      name: `${a.label} ${r.label}`,
+      method: a.method,
+      endpoint: `${r.endpoint}${a.suffix}`,
+      description: `${a.label} data ${r.label}`,
+    })),
 );
 
 // Hak akses tambahan: sinkronisasi hak akses pada role
@@ -148,6 +152,8 @@ const rolePermissionMap = {
     "chapters.update",
     "chapters.delete",
     "chapters.restore",
+    "log-activity.read",
+    "log-activity.create",
   ],
   participant: [
     "modules.read",
@@ -156,6 +162,8 @@ const rolePermissionMap = {
     "modules.get-detail",
     "chapters.read",
     "chapters.detail",
+    "log-activity.read",
+    "log-activity.create",
   ],
 };
 
