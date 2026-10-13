@@ -51,6 +51,9 @@ const findAll = async (params = {}) => {
       `${TABLE_NAME}.*`,
       db.raw(
         `(select e.employee_name from ${EMPLOYEE_TABLE} e where e.employee_id = ${TABLE_NAME}.created_by limit 1) as created_by_name`
+      ),
+      db.raw(
+        `(select m.title from modules m where m.id = ${TABLE_NAME}.modules_id limit 1) as modul_title`
       )
     )
     .orderBy(sortColumn, sortOrder)
