@@ -40,10 +40,7 @@ const listValidation = [
     .optional()
     .isInt({ min: 1, max: 100 })
     .withMessage("Limit harus antara 1-100"),
-  body("sort_by")
-    .optional()
-    .isIn(["activity", "file_name", "created_at", "updated_at"])
-    .withMessage("sort_by harus salah satu dari activity, file_name, created_at, updated_at"),
+  body("sort_by").optional(),
   body("sort_order")
     .optional()
     .customSanitizer((v) => (typeof v === "string" ? v.toLowerCase() : v))
