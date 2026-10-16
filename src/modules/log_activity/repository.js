@@ -15,38 +15,41 @@ const SORTABLE = {
   updated_at: 'updated_at'
 };
 
-const findAll = async (params = {}) => {
-  const { page, limit, sortColumn, sortOrder, search } = normalizeListParams(params, {
-    sortable: SORTABLE,
-    defaultSort: 'created_at',
-    defaultOrder: 'desc'
-  });
-  const offset = (page - 1) * limit;
+// query dasar list log activity (filter + search), dipakai oleh findAll dan findAllForExport
+const baseQuery = (params = {}, search = '') => {
+  const q = db(TABLE_NAME).where({ is_delete: false });
+  if (params.modules_id) q.andWhere('modules_id', params.modules_id);
+  if (params.employee_id) q.andWhere('created_by', params.employee_id);
+  // date range opsional pada created_at; end_date format YYYY-MM-DD dihitung sampai akhir hari tersebut
+  if (params.start_date) q.andWhere('created_at', '>=', params.start_date);
+  if (params.end_date) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(params.end_date)) {
+      q.andWhereRaw(`created_at < (?::date + interval '1 day')`, [params.end_date]);
+    } else {
+      q.andWhere('created_at', '<=', params.end_date);
+    }
+  }
+  if (search) {
+    q.andWhere((b) => b
+      .whereILike('activity', `%${search}%`)
+      .orWhereILike('file_name', `%${search}%`));
+  }
+  return q;
+};
 
-  const base = () => {
-    const q = db(TABLE_NAME).where({ is_delete: false });
-    if (params.modules_id) q.andWhere('modules_id', params.modules_id);
-    if (params.employee_id) q.andWhere('created_by', params.employee_id);
-    // date range opsional pada created_at; end_date format YYYY-MM-DD dihitung sampai akhir hari tersebut
-    if (params.start_date) q.andWhere('created_at', '>=', params.start_date);
-    if (params.end_date) {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(params.end_date)) {
-        q.andWhereRaw(`created_at < (?::date + interval '1 day')`, [params.end_date]);
-      } else {
-        q.andWhere('created_at', '<=', params.end_date);
-      }
-    }
-    if (search) {
-      q.andWhere((b) => b
-        .whereILike('activity', `%${search}%`)
-        .orWhereILike('file_name', `%${search}%`));
-    }
-    return q;
-  };
+const LIST_OPTIONS = {
+  sortable: SORTABLE,
+  defaultSort: 'created_at',
+  defaultOrder: 'desc'
+};
+
+const findAll = async (params = {}) => {
+  const { page, limit, sortColumn, sortOrder, search } = normalizeListParams(params, LIST_OPTIONS);
+  const offset = (page - 1) * limit;
 
   // created_by_name diambil dari foreign table gate_sso_employees (FDW ke database gate_sso);
   // pakai subquery agar jumlah baris tidak berlipat bila employee_id duplikat
-  const items = await base()
+  const items = await baseQuery(params, search)
     .select(
       `${TABLE_NAME}.*`,
       db.raw(
@@ -60,7 +63,7 @@ const findAll = async (params = {}) => {
     .limit(limit)
     .offset(offset);
 
-  const total = await base().count('id as count').first();
+  const total = await baseQuery(params, search).count('id as count').first();
 
   return {
     items,
@@ -71,6 +74,26 @@ const findAll = async (params = {}) => {
       totalPages: Math.ceil(total.count / limit)
     }
   };
+};
+
+// semua data sesuai filter & sort (tanpa pagination) untuk export excel
+const findAllForExport = async (params = {}) => {
+  const { sortColumn, sortOrder, search } = normalizeListParams(params, LIST_OPTIONS);
+
+  return await baseQuery(params, search)
+    .select(
+      `${TABLE_NAME}.created_at`,
+      `${TABLE_NAME}.activity`,
+      `${TABLE_NAME}.file_name`,
+      `${TABLE_NAME}.file_link`,
+      db.raw(
+        `(select e.employee_name from ${EMPLOYEE_TABLE} e where e.employee_id = ${TABLE_NAME}.created_by limit 1) as created_by_name`
+      ),
+      db.raw(
+        `(select m.title from modules m where m.id = ${TABLE_NAME}.modules_id limit 1) as modul_title`
+      )
+    )
+    .orderBy(sortColumn, sortOrder);
 };
 
 const create = async (data, actorId = null) => {
@@ -87,6 +110,7 @@ const moduleExists = async (moduleId) => {
 
 module.exports = {
   findAll,
+  findAllForExport,
   create,
   moduleExists
 };

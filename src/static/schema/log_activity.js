@@ -10,6 +10,7 @@ const logActivitySchemas = {
       modules_id: { type: 'string', format: 'uuid', nullable: true, description: 'id module terkait aktivitas ini', example: '123e4567-e89b-12d3-a456-426614174000' },
       activity: { type: 'string', nullable: true, description: 'Deskripsi aktivitas', example: 'Membuka materi Variabel dan Tipe Data' },
       file_name: { type: 'string', nullable: true, description: 'Nama file terkait aktivitas', example: 'chapter-1-materi.pdf' },
+      file_link: { type: 'string', nullable: true, description: 'Link file terkait aktivitas', example: 'https://cloud.inlinegroupdc.com/s/AbCdEfGh' },
       type: { type: 'string', nullable: true, description: 'Tipe aktivitas', example: 'view' },
       created_at: { type: 'string', format: 'date-time', example: '2025-01-01T00:00:00.000Z' },
       updated_at: { type: 'string', format: 'date-time', example: '2025-01-01T00:00:00.000Z' },
@@ -29,6 +30,7 @@ const logActivitySchemas = {
       modules_id: { type: 'string', format: 'uuid', nullable: true, example: '123e4567-e89b-12d3-a456-426614174000' },
       activity: { type: 'string', nullable: true, example: 'Membuka materi Variabel dan Tipe Data' },
       file_name: { type: 'string', nullable: true, example: 'chapter-1-materi.pdf' },
+      file_link: { type: 'string', nullable: true, description: 'Link file terkait aktivitas', example: 'https://cloud.inlinegroupdc.com/s/AbCdEfGh' },
       type: { type: 'string', nullable: true, example: 'view' }
     }
   }

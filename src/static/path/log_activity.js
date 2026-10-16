@@ -22,6 +22,43 @@ const allPaths = crudPaths({
 // Module ini hanya menyediakan get dan create (tanpa get by id, update, delete, restore)
 const logActivityPaths = {
   '/log-activity/get': allPaths['/log-activity/get'],
+  '/log-activity/export': {
+    post: {
+      tags: ['Log Activity'],
+      summary: 'Export log activity ke excel',
+      description:
+        'Export log activity ke file excel (.xlsx), file di-upload ke Nextcloud dan response berisi share link publik-nya. Filter, search dan sort sama dengan /log-activity/get, '
+        + 'tetapi page & limit diabaikan (semua data sesuai filter di-export). '
+        + 'Kolom: Datetime, Nama Karyawan, Aktifitas, Subject (judul module), Title Materi (file_name), Link Materi (file_link).',
+      requestBody: allPaths['/log-activity/get'].post.requestBody,
+      responses: {
+        200: {
+          description: 'Export berhasil, berisi share link file excel di Nextcloud',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Export excel berhasil' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      file_name: { type: 'string', example: 'log-activity-1760600000000.xlsx' },
+                      total: { type: 'integer', description: 'Jumlah baris log activity yang di-export', example: 25 },
+                      url: { type: 'string', format: 'uri', description: 'Share link publik file excel di Nextcloud', example: 'https://cloud.inlinegroupdc.com/s/AbCdEfGh' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        401: allPaths['/log-activity/get'].post.responses[401],
+        403: allPaths['/log-activity/get'].post.responses[403]
+      }
+    }
+  },
   '/log-activity/create': allPaths['/log-activity/create']
 };
 

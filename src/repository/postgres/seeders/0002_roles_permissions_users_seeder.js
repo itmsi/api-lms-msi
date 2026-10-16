@@ -113,6 +113,15 @@ permissions.push(
   },
 );
 
+// Hak akses tambahan: export log activity ke excel
+permissions.push({
+  code: "log-activity.export",
+  name: "Export Log Activity",
+  method: "POST",
+  endpoint: `${API_PREFIX}/log-activity/export`,
+  description: "Export data Log Activity ke file excel",
+});
+
 const rolePermissionMap = {
   "super-admin": permissions.map((p) => p.code),
   admin: permissions

@@ -24,6 +24,19 @@ router.post(
 );
 
 /**
+ * @route   POST /api/log-activity/export
+ * @desc    Export log activity ke excel, upload ke Nextcloud, kembalikan share link (filter sama dengan /get, tanpa pagination)
+ * @access  Protected (hak akses log-activity.export)
+ */
+router.post(
+  '/export',
+  authorize,
+  listValidation,
+  validateMiddleware,
+  controller.exportExcel
+);
+
+/**
  * @route   POST /api/log-activity/create
  * @desc    Create new log activity
  * @access  Protected (hak akses log-activity.*)

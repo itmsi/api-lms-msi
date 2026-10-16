@@ -18,6 +18,15 @@ const getAll = async (req, res) => {
   }
 };
 
+const exportExcel = async (req, res) => {
+  try {
+    const data = await service.exportExcel(req.body);
+    return successResponse(res, data, 'Export excel berhasil');
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 const create = async (req, res) => {
   try {
     const data = await service.createItem(req.body, req.user.id);
@@ -29,5 +38,6 @@ const create = async (req, res) => {
 
 module.exports = {
   getAll,
+  exportExcel,
   create
 };
