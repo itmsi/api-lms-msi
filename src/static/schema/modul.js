@@ -26,6 +26,29 @@ const modulSchemas = {
     items: { type: "string", maxLength: 20 },
     example: ["reguler", "onboarding", "mt"],
   },
+  ModulCompact: {
+    type: "object",
+    properties: {
+      id: {
+        type: "string",
+        format: "uuid",
+        description: "Unique identifier",
+        example: "123e4567-e89b-12d3-a456-426614174000",
+      },
+      title: {
+        type: "string",
+        nullable: true,
+        description: "Judul module",
+        example: "Pengenalan JavaScript",
+      },
+      description: {
+        type: "string",
+        nullable: true,
+        description: "Deskripsi module (versi plain text / description_clean)",
+        example: "Materi dasar bahasa pemrograman JavaScript",
+      },
+    },
+  },
   Modul: {
     type: "object",
     properties: {

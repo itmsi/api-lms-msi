@@ -9,6 +9,16 @@ const handleError = (res, error) => {
   return errorResponse(res, error.message || 'Internal server error', error.statusCode || 500);
 };
 
+// respon ringkas: hanya id, title, description
+const getAllCompact = async (req, res) => {
+  try {
+    const data = await service.getAllItems(req.body, { compact: true });
+    return successResponse(res, data);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 const getAll = async (req, res) => {
   try {
     const data = await service.getAllItems(req.body);
@@ -98,6 +108,7 @@ const removeAll = async (req, res) => {
 
 module.exports = {
   getAll,
+  getAllCompact,
   getById,
   create,
   update,

@@ -25,8 +25,9 @@ const modulPaths = {
   "/modules/get": {
     post: {
       tags: ["Modules"],
-      summary: "Get all modules",
-      description: "Retrieve all modules with pagination, sorting, and search",
+      summary: "Get all modules (ringkas)",
+      description:
+        "Retrieve all modules with pagination, sorting, and search. Respon ringkas, tiap item hanya berisi id, title, description. Gunakan POST /modules/get-list untuk respon lengkap.",
       requestBody: {
         required: false,
         content: json(
@@ -46,7 +47,7 @@ const modulPaths = {
         ...authErrors,
         200: {
           description: "Success",
-          content: json(envelope(paginated("Modul"), "Success")),
+          content: json(envelope(paginated("ModulCompact"), "Success")),
         },
       },
     },
@@ -141,7 +142,7 @@ const modulPaths = {
       tags: ["Modules"],
       summary: "Get all modules (get-list)",
       description:
-        "Sama seperti POST /modules/get: retrieve all modules with pagination, sorting, and search",
+        "Retrieve all modules with pagination, sorting, and search. Respon lengkap (semua kolom module), filter sama seperti POST /modules/get.",
       requestBody: {
         required: false,
         content: json(

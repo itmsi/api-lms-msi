@@ -18,7 +18,7 @@ router.use(authenticate);
 
 /**
  * @route   POST /api/modules/get
- * @desc    Get all modules with pagination
+ * @desc    Get all modules with pagination (respon ringkas: id, title, description)
  * @access  Protected (hak akses modules.*)
  */
 router.post(
@@ -26,12 +26,12 @@ router.post(
   authorize,
   listValidation,
   validateMiddleware,
-  controller.getAll
+  controller.getAllCompact
 );
 
 /**
  * @route   POST /api/modules/get-list
- * @desc    Get all modules with pagination (sama seperti /get)
+ * @desc    Get all modules with pagination (respon lengkap)
  * @access  Protected (hak akses modules.*)
  */
 router.post(

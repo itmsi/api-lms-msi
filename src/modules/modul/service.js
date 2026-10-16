@@ -65,8 +65,8 @@ const uploadBanner = async (file) => {
   return await generateShareLink(remotePath);
 };
 
-const getAllItems = async (params = {}) => {
-  return await repository.findAll(params);
+const getAllItems = async (params = {}, options = {}) => {
+  return await repository.findAll(params, options);
 };
 
 const getItemById = async (id) => {

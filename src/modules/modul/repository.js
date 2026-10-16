@@ -31,6 +31,9 @@ const LIST_COLUMNS = [
   "module_category",
 ];
 
+// kolom ringkas untuk POST /modules/get
+const LIST_COLUMNS_COMPACT = ["id", "title", "description_clean as description"];
+
 const LIST_COLUMNS_DETAIL = [
   "id",
   "title",
@@ -50,7 +53,8 @@ const LIST_COLUMNS_DETAIL = [
   "module_category",
 ];
 
-const findAll = async (params = {}) => {
+// options.compact = true -> hanya kolom ringkas (id, title, description)
+const findAll = async (params = {}, { compact = false } = {}) => {
   const { page, limit, sortColumn, sortOrder, search } = normalizeListParams(
     params,
     {
@@ -77,7 +81,7 @@ const findAll = async (params = {}) => {
   };
 
   const items = await base()
-    .select(LIST_COLUMNS)
+    .select(compact ? LIST_COLUMNS_COMPACT : LIST_COLUMNS)
     .orderBy(sortColumn, sortOrder)
     .limit(limit)
     .offset(offset);
