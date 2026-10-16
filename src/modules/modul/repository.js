@@ -32,7 +32,14 @@ const LIST_COLUMNS = [
 ];
 
 // kolom ringkas untuk POST /modules/get
-const LIST_COLUMNS_COMPACT = ["id", "title", "description_clean as description"];
+const LIST_COLUMNS_COMPACT = [
+  "id",
+  "title",
+  db.raw(
+    `CASE WHEN banner IS NOT NULL AND banner <> '' THEN concat_ws('', banner, '/preview'::text) ELSE banner END as banner`,
+  ),
+  "description_clean as description",
+];
 
 const LIST_COLUMNS_DETAIL = [
   "id",
