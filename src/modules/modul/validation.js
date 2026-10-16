@@ -1,4 +1,9 @@
 const { body, param } = require("express-validator");
+const {
+  parseLinkMaterials,
+  assertLinkMaterials,
+  normalizeLinkMaterials,
+} = require("../../utils/link_materials");
 
 const idParam = param("id")
   .notEmpty()
@@ -7,32 +12,13 @@ const idParam = param("id")
   .withMessage("Format ID tidak valid");
 
 // request dikirim sebagai multipart/form-data (karena ada file banner), jadi link_materials
-// dikirim sebagai string: baik JSON array ('["https://...","https://..."]')
-// maupun list dipisah koma ('https://..., https://...')
+// dikirim sebagai string JSON array, mis. '[{"title":"Materi 1","link":"https://..."}]'
 const linkMaterialsBody = body("link_materials")
   .optional()
-  .customSanitizer((value) => {
-    if (Array.isArray(value)) return value;
-    if (typeof value !== "string") return value;
-
-    const trimmed = value.trim();
-    if (!trimmed) return [];
-
-    try {
-      const parsed = JSON.parse(trimmed);
-      if (Array.isArray(parsed)) return parsed;
-    } catch {
-      // bukan JSON, lanjut coba parse sebagai list dipisah koma
-    }
-
-    return trimmed
-      .split(",")
-      .map((v) => v.trim())
-      .filter(Boolean);
-  })
-  .isArray()
-  .withMessage("link_materials harus berupa array link")
-  .bail();
+  .customSanitizer(parseLinkMaterials)
+  .custom((items) => assertLinkMaterials(items))
+  .bail()
+  .customSanitizer(normalizeLinkMaterials);
 
 const descriptionCleanBody = body("description_clean")
   .optional({ nullable: true })
@@ -74,10 +60,6 @@ const createValidation = [
   body("description").optional().trim(),
   descriptionCleanBody,
   linkMaterialsBody,
-  body("link_materials.*")
-    .optional()
-    .isURL()
-    .withMessage("Setiap link_materials harus berupa URL yang valid"),
   moduleCategoryBody,
 ];
 
@@ -91,10 +73,6 @@ const updateValidation = [
   body("description").optional().trim(),
   descriptionCleanBody,
   linkMaterialsBody,
-  body("link_materials.*")
-    .optional()
-    .isURL()
-    .withMessage("Setiap link_materials harus berupa URL yang valid"),
   moduleCategoryBody,
   body("banner_delete")
     .optional()
@@ -109,7 +87,7 @@ const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 // request dikirim sebagai multipart/form-data (karena ada file banner), jadi chapters
-// dikirim sebagai string JSON array, mis. '[{"title":"Bab 1","link_materials":["https://..."]}]'
+// dikirim sebagai string JSON array, mis. '[{"title":"Bab 1","link_materials":[{"title":"Materi 1","link":"https://..."}]}]'
 // item yang punya `id` berarti update chapter yang sudah ada, tanpa `id` berarti chapter baru
 const chaptersBody = body("chapters")
   .optional()
@@ -155,17 +133,25 @@ const chaptersBody = body("chapters")
       ) {
         throw new Error(`chapters[${idx}].line harus berupa angka bulat >= 0`);
       }
-      if (
-        chapter.link_materials !== undefined &&
-        !Array.isArray(chapter.link_materials)
-      ) {
-        throw new Error(
-          `chapters[${idx}].link_materials harus berupa array link`,
+      if (chapter.link_materials !== undefined) {
+        assertLinkMaterials(
+          chapter.link_materials,
+          `chapters[${idx}].link_materials`,
         );
       }
     });
     return true;
-  });
+  })
+  .customSanitizer((chapters) =>
+    chapters.map((chapter) =>
+      chapter.link_materials !== undefined
+        ? {
+            ...chapter,
+            link_materials: normalizeLinkMaterials(chapter.link_materials),
+          }
+        : chapter,
+    ),
+  );
 
 const createAllValidation = [
   body("title")
@@ -177,10 +163,6 @@ const createAllValidation = [
   body("description").optional().trim(),
   descriptionCleanBody,
   linkMaterialsBody,
-  body("link_materials.*")
-    .optional()
-    .isURL()
-    .withMessage("Setiap link_materials harus berupa URL yang valid"),
   moduleCategoryBody,
   chaptersBody,
 ];
@@ -195,10 +177,6 @@ const updateAllValidation = [
   body("description").optional().trim(),
   descriptionCleanBody,
   linkMaterialsBody,
-  body("link_materials.*")
-    .optional()
-    .isURL()
-    .withMessage("Setiap link_materials harus berupa URL yang valid"),
   moduleCategoryBody,
   body("banner_delete")
     .optional()

@@ -3,6 +3,23 @@
  */
 
 const modulSchemas = {
+  LinkMaterial: {
+    type: "object",
+    required: ["title", "link"],
+    properties: {
+      title: {
+        type: "string",
+        description: "Judul / label link materi",
+        example: "Materi 1",
+      },
+      link: {
+        type: "string",
+        format: "uri",
+        description: "URL link materi",
+        example: "https://example.com/materi-1.pdf",
+      },
+    },
+  },
   ModuleCategoryFilter: {
     type: "array",
     description: "Filter berdasarkan satu atau beberapa kategori module",
@@ -46,10 +63,10 @@ const modulSchemas = {
         type: "array",
         nullable: true,
         description: "Daftar link materi module",
-        items: { type: "string", format: "uri" },
+        items: { $ref: "#/components/schemas/LinkMaterial" },
         example: [
-          "https://example.com/materi-1.pdf",
-          "https://example.com/materi-2.pdf",
+          { title: "Materi 1", link: "https://example.com/materi-1.pdf" },
+          { title: "Materi 2", link: "https://example.com/materi-2.pdf" },
         ],
       },
       banner: {
@@ -148,9 +165,11 @@ const modulSchemas = {
       link_materials: {
         type: "string",
         description:
-          "Daftar link materi (dikirim via multipart/form-data), boleh string JSON array atau list dipisah koma",
-        example:
-          "https://example.com/materi-1.pdf,https://example.com/materi-2.pdf",
+          'Daftar link materi (dikirim via multipart/form-data) sebagai string JSON array of LinkMaterial, format: [{"title":"","link":""}]',
+        example: JSON.stringify([
+          { title: "Materi 1", link: "https://example.com/materi-1.pdf" },
+          { title: "Materi 2", link: "https://example.com/materi-2.pdf" },
+        ]),
       },
       banner: {
         type: "string",
@@ -198,8 +217,13 @@ const modulSchemas = {
       },
       link_materials: {
         type: "array",
-        items: { type: "string", format: "uri" },
-        example: ["https://example.com/chapter-1-materi.pdf"],
+        items: { $ref: "#/components/schemas/LinkMaterial" },
+        example: [
+          {
+            title: "Materi Chapter 1",
+            link: "https://example.com/chapter-1-materi.pdf",
+          },
+        ],
       },
     },
   },
@@ -234,9 +258,11 @@ const modulSchemas = {
       link_materials: {
         type: "string",
         description:
-          "Daftar link materi (dikirim via multipart/form-data), boleh string JSON array atau list dipisah koma",
-        example:
-          "https://example.com/materi-1.pdf,https://example.com/materi-2.pdf",
+          'Daftar link materi (dikirim via multipart/form-data) sebagai string JSON array of LinkMaterial, format: [{"title":"","link":""}]',
+        example: JSON.stringify([
+          { title: "Materi 1", link: "https://example.com/materi-1.pdf" },
+          { title: "Materi 2", link: "https://example.com/materi-2.pdf" },
+        ]),
       },
       banner: {
         type: "string",
@@ -253,14 +279,24 @@ const modulSchemas = {
             line: 1,
             title: "Variabel dan Tipe Data",
             description: "Mengenal variabel",
-            link_materials: ["https://example.com/chapter-1-materi.pdf"],
+            link_materials: [
+              {
+                title: "Materi Chapter 1",
+                link: "https://example.com/chapter-1-materi.pdf",
+              },
+            ],
           },
           {
             id: "",
             line: 2,
             title: "Variabel dan Tipe Data",
             description: "Mengenal variabel",
-            link_materials: ["https://example.com/chapter-1-materi.pdf"],
+            link_materials: [
+              {
+                title: "Materi Chapter 1",
+                link: "https://example.com/chapter-1-materi.pdf",
+              },
+            ],
           },
         ]),
       },
@@ -296,9 +332,11 @@ const modulSchemas = {
       link_materials: {
         type: "string",
         description:
-          "Daftar link materi (dikirim via multipart/form-data), boleh string JSON array atau list dipisah koma",
-        example:
-          "https://example.com/materi-1.pdf,https://example.com/materi-2.pdf",
+          'Daftar link materi (dikirim via multipart/form-data) sebagai string JSON array of LinkMaterial, format: [{"title":"","link":""}]',
+        example: JSON.stringify([
+          { title: "Materi 1", link: "https://example.com/materi-1.pdf" },
+          { title: "Materi 2", link: "https://example.com/materi-2.pdf" },
+        ]),
       },
       banner: {
         type: "string",
@@ -322,14 +360,24 @@ const modulSchemas = {
             line: 1,
             title: "Variabel dan Tipe Data",
             description: "Mengenal variabel",
-            link_materials: ["https://example.com/chapter-1-materi.pdf"],
+            link_materials: [
+              {
+                title: "Materi Chapter 1",
+                link: "https://example.com/chapter-1-materi.pdf",
+              },
+            ],
           },
           {
             id: "",
             line: 2,
             title: "Variabel dan Tipe Data",
             description: "Mengenal variabel",
-            link_materials: ["https://example.com/chapter-1-materi.pdf"],
+            link_materials: [
+              {
+                title: "Materi Chapter 1",
+                link: "https://example.com/chapter-1-materi.pdf",
+              },
+            ],
           },
         ]),
       },

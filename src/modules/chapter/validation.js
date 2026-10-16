@@ -1,4 +1,9 @@
 const { body, param } = require("express-validator");
+const {
+  parseLinkMaterials,
+  assertLinkMaterials,
+  normalizeLinkMaterials,
+} = require("../../utils/link_materials");
 
 const idParam = param("id")
   .notEmpty()
@@ -6,10 +11,13 @@ const idParam = param("id")
   .isUUID()
   .withMessage("Format ID tidak valid");
 
+// format: [{ "title": "Materi 1", "link": "https://..." }]
 const linkMaterialsBody = body("link_materials")
   .optional()
-  .isArray()
-  .withMessage("link_materials harus berupa array link");
+  .customSanitizer(parseLinkMaterials)
+  .custom((items) => assertLinkMaterials(items))
+  .bail()
+  .customSanitizer(normalizeLinkMaterials);
 
 const createValidation = [
   body("modules_id")
@@ -24,10 +32,6 @@ const createValidation = [
     .trim(),
   body("description").optional().trim(),
   linkMaterialsBody,
-  body("link_materials.*")
-    .optional()
-    .isURL()
-    .withMessage("Setiap link_materials harus berupa URL yang valid"),
 ];
 
 const updateValidation = [
@@ -43,10 +47,6 @@ const updateValidation = [
     .trim(),
   body("description").optional().trim(),
   linkMaterialsBody,
-  body("link_materials.*")
-    .optional()
-    .isURL()
-    .withMessage("Setiap link_materials harus berupa URL yang valid"),
 ];
 
 const getByIdValidation = [idParam];
