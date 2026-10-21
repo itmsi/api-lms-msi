@@ -14,8 +14,8 @@ const chapterSchemas = {
         type: 'array',
         nullable: true,
         description: 'Daftar link materi chapter',
-        items: { type: 'string', format: 'uri' },
-        example: ['https://example.com/chapter-1-materi.pdf']
+        items: { $ref: '#/components/schemas/LinkMaterial' },
+        example: [{ title: 'Materi Chapter 1', link: 'https://example.com/chapter-1-materi.pdf' }]
       },
       created_at: { type: 'string', format: 'date-time', example: '2025-01-01T00:00:00.000Z' },
       updated_at: { type: 'string', format: 'date-time', example: '2025-01-01T00:00:00.000Z' },
@@ -35,8 +35,9 @@ const chapterSchemas = {
       description: { type: 'string', maxLength: 2000, example: 'Mengenal variabel, tipe data, dan operator di JavaScript' },
       link_materials: {
         type: 'array',
-        items: { type: 'string', format: 'uri' },
-        example: ['https://example.com/chapter-1-materi.pdf']
+        description: 'Format: [{ "title": "", "link": "" }]',
+        items: { $ref: '#/components/schemas/LinkMaterial' },
+        example: [{ title: 'Materi Chapter 1', link: 'https://example.com/chapter-1-materi.pdf' }]
       }
     }
   }
