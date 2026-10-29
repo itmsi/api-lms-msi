@@ -58,7 +58,7 @@ const quizQuestionSchemas = {
           '- multiple_choice: minimal 2 opsi, tepat 1 is_correct=true',
           '- multiple_answers: minimal 2 opsi, minimal 1 is_correct=true',
           '- true_false: tepat 2 opsi (mis. Benar/Salah), tepat 1 is_correct=true',
-          '- short_answer: minimal 1 opsi = jawaban yang diterima (semua dianggap benar)'
+          '- short_answer: minimal 1 opsi = jawaban yang diterima (semua dianggap benar). text boleh berupa HTML dari rich text editor, tetapi tidak boleh HTML kosong seperti <p></p>'
         ].join('\n'),
         example: 'multiple_choice'
       },
