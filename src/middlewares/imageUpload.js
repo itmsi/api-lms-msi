@@ -31,35 +31,40 @@ const upload = multer({
   }
 });
 
-const uploadBannerFile = upload.single('banner');
+// Middleware wrapper untuk menangani error multer, file bersifat opsional
+const createImageUploadHandler = (fieldName) => {
+  const uploadFile = upload.single(fieldName);
 
-// Middleware wrapper untuk menangani error multer, field 'banner' bersifat opsional
-const handleBannerUpload = (req, res, next) => {
-  uploadBannerFile(req, res, (err) => {
-    if (err instanceof multer.MulterError) {
-      if (err.code === 'LIMIT_FILE_SIZE') {
+  return (req, res, next) => {
+    uploadFile(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({
+            success: false,
+            message: 'Ukuran file terlalu besar. Maksimal 5MB.',
+            timestamp: new Date().toISOString()
+          });
+        }
         return res.status(400).json({
           success: false,
-          message: 'Ukuran file terlalu besar. Maksimal 5MB.',
+          message: `Gagal upload ${fieldName}`,
+          errors: err.message,
+          timestamp: new Date().toISOString()
+        });
+      } else if (err) {
+        return res.status(400).json({
+          success: false,
+          message: `Format file ${fieldName} tidak valid`,
+          errors: err.message,
           timestamp: new Date().toISOString()
         });
       }
-      return res.status(400).json({
-        success: false,
-        message: 'Gagal upload banner',
-        errors: err.message,
-        timestamp: new Date().toISOString()
-      });
-    } else if (err) {
-      return res.status(400).json({
-        success: false,
-        message: 'Format file banner tidak valid',
-        errors: err.message,
-        timestamp: new Date().toISOString()
-      });
-    }
-    next();
-  });
+      next();
+    });
+  };
 };
 
-module.exports = { handleBannerUpload };
+const handleBannerUpload = createImageUploadHandler('banner');
+const handleImageUpload = createImageUploadHandler('image');
+
+module.exports = { handleBannerUpload, handleImageUpload };
