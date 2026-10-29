@@ -20,6 +20,12 @@ const parseOptions = (value) => {
   }
 };
 
+// teks yang terlihat dari HTML (jawaban singkat berasal dari editor rich text): buang tag dan &nbsp;,
+// gambar tetap dihitung sebagai konten agar jawaban yang hanya berisi gambar tidak dianggap kosong
+const hasVisibleContent = (html) =>
+  /<img[\s>/]/i.test(html) ||
+  html.replace(/<[^>]*>/g, '').replace(/&nbsp;|&#160;/gi, ' ').trim() !== '';
+
 const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
 /**
@@ -66,6 +72,9 @@ const assertOptions = (type, options) => {
       break;
     case 'short_answer':
       if (options.length < 1) throw new Error('short_answer minimal memiliki 1 jawaban yang diterima');
+      options.forEach((option, idx) => {
+        if (!hasVisibleContent(option.text)) throw new Error(`options[${idx}].text tidak boleh berisi HTML kosong`);
+      });
       break;
     default:
       throw new Error(`type harus salah satu dari ${QUESTION_TYPES.join(', ')}`);
