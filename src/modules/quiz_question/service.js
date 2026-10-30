@@ -1,6 +1,7 @@
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const repository = require('./repository');
+const { regradeQuestion } = require('../quiz_answers/grading');
 const { assertOptions, normalizeOptions } = require('./options');
 const {
   client,
@@ -103,7 +104,14 @@ const updateItem = async (id, itemData, file, actorId) => {
     payload.image = null;
   }
 
-  return await repository.update(id, payload, actorId);
+  const data = await repository.update(id, payload, actorId);
+
+  // kunci jawaban / poin / tipe soal berubah: nilai ulang semua jawaban soal ini
+  if (['type', 'options', 'points'].some((k) => payload[k] !== undefined)) {
+    await regradeQuestion(id);
+  }
+
+  return data;
 };
 
 const deleteItem = async (id, actorId) => {

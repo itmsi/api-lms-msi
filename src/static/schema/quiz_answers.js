@@ -20,9 +20,9 @@ const quizUserProps = {
   quiz_type: { type: 'array', nullable: true, items: { type: 'string', enum: ['reguler', 'mt'] }, example: ['reguler', 'mt'] },
   quiz_start_date: { type: 'string', format: 'date', nullable: true, example: '2026-11-03' },
   quiz_end_date: { type: 'string', format: 'date', nullable: true, example: '2026-12-31' },
-  total_point: { type: 'string', nullable: true, description: 'Dihitung backend: jumlah points jawaban user pada soal-soal quiz ini', example: '80' },
-  completed_count: { type: 'string', nullable: true, description: 'Dihitung backend: jumlah soal quiz yang sudah dijawab user', example: '8' },
-  uncompleted_count: { type: 'string', nullable: true, description: 'Dihitung backend: jumlah soal quiz yang belum dijawab user', example: '2' },
+  total_point: { type: 'string', nullable: true, description: 'Dihitung backend saat jawaban dinilai: jumlah admin_points jawaban user pada soal-soal quiz ini', example: '80' },
+  completed_count: { type: 'string', nullable: true, description: 'Dihitung backend saat jawaban dinilai: jumlah jawaban user dengan answers tidak kosong', example: '8' },
+  uncompleted_count: { type: 'string', nullable: true, description: 'Dihitung backend saat jawaban dinilai: jumlah jawaban user dengan answers kosong ([])', example: '2' },
   ...auditProps
 };
 
@@ -41,9 +41,9 @@ const quizAnswersSchemas = {
       question_line: { type: 'integer', nullable: true, description: 'Urutan soal (hasil join)', example: 1 },
       question_type: { type: 'string', nullable: true, description: 'Tipe soal (hasil join)', example: 'multiple_choice' },
       question: { type: 'string', nullable: true, description: 'Teks soal (hasil join)', example: 'Apa langkah yang paling tepat?' },
-      answers: { description: 'Jawaban user (jsonb, bebas: array/objek/teks)', nullable: true, example: [2] },
-      points: { type: 'integer', example: 10 },
-      admin_points: { type: 'string', nullable: true, description: 'Poin dari admin/penilai', example: null },
+      answers: { type: 'array', nullable: true, description: 'Jawaban user, format sama seperti options soal; is_correct = true berarti opsi dipilih', items: { $ref: '#/components/schemas/QuizAnswerItem' }, example: [{ line: 4, text: 'jalan yang di lalui oleh kendaraan berat', is_correct: true }] },
+      points: { type: 'integer', description: 'Poin jawaban (diisi otomatis oleh penilaian, kecuali short_answer)', example: 10 },
+      admin_points: { type: 'string', nullable: true, description: 'Poin penilaian (diisi otomatis oleh penilaian, kecuali short_answer). Dijumlahkan ke quiz_users.total_point', example: '10' },
       files: { type: 'string', nullable: true, description: 'Share link file lampiran dari Nextcloud', example: null },
       ...auditProps
     }
@@ -75,6 +75,15 @@ const quizAnswersSchemas = {
           }
         }
       }
+    }
+  },
+  QuizAnswerItem: {
+    type: 'object',
+    required: ['line', 'text', 'is_correct'],
+    properties: {
+      line: { type: 'integer', minimum: 1, description: 'line opsi soal yang dijawab', example: 4 },
+      text: { type: 'string', example: 'jalan yang di lalui oleh kendaraan berat' },
+      is_correct: { type: 'boolean', description: 'true = opsi dipilih user', example: true }
     }
   },
   QuizWithProgress: {
@@ -135,9 +144,9 @@ const quizAnswersSchemas = {
         nullable: true,
         description: 'Jawaban user untuk soal ini, null jika belum menjawab',
         properties: {
-          answers: { description: 'Jawaban user (jsonb)', nullable: true, example: [2] },
+          answers: { type: 'array', nullable: true, items: { $ref: '#/components/schemas/QuizAnswerItem' }, example: [{ line: 4, text: 'jalan yang di lalui oleh kendaraan berat', is_correct: true }] },
           points: { type: 'integer', description: 'Poin jawaban', example: 2 },
-          admin_points: { type: 'string', nullable: true, description: 'Poin dari admin/penilai', example: null },
+          admin_points: { type: 'string', nullable: true, description: 'Poin penilaian', example: '2' },
           files: { type: 'string', nullable: true, description: 'Share link file lampiran dari Nextcloud', example: null }
         }
       }
@@ -153,15 +162,19 @@ const quizAnswersSchemas = {
   // dikirim sebagai multipart/form-data, jadi answers berupa string JSON
   QuizAnswerInput: {
     type: 'object',
-    required: ['quiz_question_id'],
+    required: ['quiz_question_id', 'answers'],
     properties: {
       quiz_question_id: { type: 'string', format: 'uuid', description: 'id soal yang dijawab. quizze_id diambil otomatis dari quiz_questions.quizzes_id', example: '5a8d9e10-1b2c-4d3e-8f40-a1b2c3d4e5f6' },
       answers: {
         type: 'string',
-        description: 'Jawaban user sebagai string JSON (mis. [2] atau {"text":"<p>jawaban</p>"}). Teks non-JSON disimpan sebagai string JSON.',
-        example: '[2]'
+        description: [
+          'Wajib. String JSON array dengan format sama seperti options soal: [{"line":1,"text":"text jawab","is_correct":true}].',
+          'is_correct = true berarti opsi tersebut dipilih user (line harus sesuai line opsi soal). Kirim [] jika soal belum dijawab.',
+          'Penilaian (kecuali short_answer): benar jika semua line yang dipilih sama persis dengan semua opsi is_correct = true pada soal.'
+        ].join(' '),
+        example: '[{"line":1,"text":"text jawab","is_correct":true}]'
       },
-      points: { type: 'integer', minimum: 0, default: 0, example: 10 },
+      points: { type: 'integer', minimum: 0, default: 0, description: 'Hanya dipakai untuk soal short_answer; soal lain points diisi otomatis oleh penilaian', example: 0 },
       files: { type: 'string', format: 'binary', description: 'File lampiran opsional (gambar, pdf, doc/x, xls/x, ppt/x, txt, zip; maks 10MB). Jika dikirim, selalu menggantikan file lama.' },
       file_delete: {
         type: 'boolean',

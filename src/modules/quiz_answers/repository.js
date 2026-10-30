@@ -1,5 +1,6 @@
 const { pgCore: db } = require("../../config/database");
 const { normalizeListParams } = require("../../utils/list_params");
+const { gradeAnswer } = require("./grading");
 
 const TABLE_NAME = "quiz_users";
 const ANSWER_TABLE = "quiz_answers";
@@ -199,39 +200,9 @@ const findAnswerById = async (id, conn = db) => {
 };
 
 /**
- * Rekap pengerjaan user pada sebuah quiz, dihitung dari quiz_answers:
- * - total_point       : jumlah points jawaban user pada soal-soal quiz ini
- * - completed_count   : jumlah soal quiz yang sudah dijawab user
- * - uncompleted_count : jumlah soal quiz (aktif) yang belum dijawab user
- * Disimpan sebagai string sesuai tipe kolom quiz_users.
- */
-const computeSummary = async (trx, quizId, userId) => {
-  const row = await trx("quiz_questions as qq")
-    .leftJoin("quiz_answers as qa", function () {
-      this.on("qa.quiz_question_id", "qq.id")
-        .andOn("qa.created_by", trx.raw("?", [userId]))
-        .andOn("qa.is_delete", trx.raw("false"));
-    })
-    .where({ "qq.quizzes_id": quizId, "qq.is_delete": false })
-    .first(
-      trx.raw("coalesce(sum(qa.points), 0)::int as total_point"),
-      trx.raw("count(qa.id)::int as completed_count"),
-      trx.raw("(count(qq.id) - count(qa.id))::int as uncompleted_count"),
-    );
-
-  return {
-    total_point: String(row.total_point),
-    completed_count: String(row.completed_count),
-    uncompleted_count: String(row.uncompleted_count),
-  };
-};
-
-/**
- * Simpan jawaban dalam satu transaksi:
- * - quiz_answers dicari by quiz_question_id + created_by. Jika sudah ada di-update, jika belum dibuat baru.
- * - rekap quiz_users (total_point, completed_count, uncompleted_count) dihitung ulang dari quiz_answers.
- * - quiz_users dicari by quizze_id + created_by. Jika belum ada dibuat baru; jika sudah ada,
- *   hanya di-update bila ada nilai rekap yang berbeda (selain itu dilewati).
+ * Simpan jawaban dalam satu transaksi. quiz_answers dicari by quiz_question_id + created_by:
+ * jika sudah ada di-update, jika belum dibuat baru. Setelah itu jawaban dinilai dan rekap quiz_users
+ * dihitung ulang lewat gradeAnswer (lihat grading.js).
  */
 const upsert = async (quizId, answerData, actorId = null) => {
   return await db.transaction(async (trx) => {
@@ -265,44 +236,15 @@ const upsert = async (quizId, answerData, actorId = null) => {
       answerId = created.id;
     }
 
-    const summary = await computeSummary(trx, quizId, actorId);
-
-    const existingUser = await trx(TABLE_NAME)
-      .where({ quizze_id: quizId, created_by: actorId, is_delete: false })
-      .first();
-
-    let quizUserId;
-    if (existingUser) {
-      quizUserId = existingUser.id;
-
-      const changes = Object.fromEntries(
-        Object.entries(summary).filter(([k, v]) => existingUser[k] !== v),
-      );
-      if (Object.keys(changes).length) {
-        await trx(TABLE_NAME)
-          .where({ id: quizUserId })
-          .update({
-            ...changes,
-            updated_by: actorId,
-            updated_at: trx.fn.now(),
-          });
-      }
-    } else {
-      const [created] = await trx(TABLE_NAME)
-        .insert({
-          ...summary,
-          quizze_id: quizId,
-          created_by: actorId,
-          created_at: trx.fn.now(),
-          updated_at: trx.fn.now(),
-        })
-        .returning("id");
-      quizUserId = created.id;
-    }
+    await gradeAnswer(answerData.quiz_question_id, actorId, trx);
 
     return {
       quiz_user: await baseQuery(trx)
-        .where("quiz_users.id", quizUserId)
+        .where({
+          "quiz_users.quizze_id": quizId,
+          "quiz_users.created_by": actorId,
+          "quiz_users.is_delete": false,
+        })
         .first(COLUMNS),
       quiz_answer: await findAnswerById(answerId, trx),
     };

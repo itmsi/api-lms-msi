@@ -33,9 +33,11 @@ const create = quizAnswersPaths['/quiz-answers/create'].post;
 create.summary = 'Simpan jawaban quiz (upsert)';
 create.description = [
   'Dikirim sebagai multipart/form-data karena ada upload file (field files, di-upload ke Nextcloud). Payload hanya quiz_question_id, answers, points, files, file_delete; user diambil dari token (created_by).',
+  'Format answers: [{"line":1,"text":"text jawab","is_correct":true}] (is_correct = true berarti opsi dipilih; [] = belum dijawab).',
   '1. quiz_answers dicari berdasarkan quiz_question_id + created_by. Jika sudah ada di-update, jika belum dibuat baru.',
-  '2. quizze_id diambil dari quiz_questions.quizzes_id. Rekap dihitung ulang dari quiz_answers user pada quiz tersebut: total_point = jumlah points, completed_count = jumlah soal yang sudah dijawab, uncompleted_count = jumlah soal (aktif) yang belum dijawab.',
-  '3. quiz_users dicari berdasarkan quizze_id + created_by. Jika belum ada, dibuat baru. Jika sudah ada, hanya di-update bila nilai rekap berubah; selain itu dilewati.',
+  '2. Penilaian otomatis, kecuali soal short_answer: semua opsi quiz_questions.options dengan is_correct = true dibandingkan dengan line yang dipilih di answers. Jika sama persis, quiz_answers.points & admin_points = quiz_questions.points; jika tidak, 0.',
+  '3. Rekap quiz_users (quizze_id dari quiz_questions.quizzes_id) dihitung ulang: total_point = jumlah admin_points, completed_count = jumlah jawaban dengan answers tidak [], uncompleted_count = jumlah jawaban dengan answers = []. quiz_users dibuat bila belum ada, dan hanya di-update bila nilainya berubah.',
+  'Nilai ulang juga berjalan otomatis saat type/options/points soal diubah (PUT /quiz-questions/{id}).',
   'File: upload baru selalu menggantikan file lama; file_delete=true mengosongkan file bila tidak ada upload baru.'
 ].join('\n\n');
 create.requestBody = { required: true, content: multipart('QuizAnswerInput') };
