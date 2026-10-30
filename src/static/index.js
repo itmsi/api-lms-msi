@@ -39,6 +39,7 @@ const chapterSchema = require("./schema/chapter");
 const logActivitySchema = require("./schema/log_activity");
 const quizSchema = require("./schema/quiz");
 const quizQuestionSchema = require("./schema/quiz_question");
+const quizAnswersSchema = require("./schema/quiz_answers");
 
 // Import paths
 // Tambahkan path module Anda di sini
@@ -52,6 +53,7 @@ const chapterPaths = require("./path/chapter");
 const logActivityPaths = require("./path/log_activity");
 const quizPaths = require("./path/quiz");
 const quizQuestionPaths = require("./path/quiz_question");
+const quizAnswersPaths = require("./path/quiz_answers");
 
 // Combine all schemas
 const schemas = {
@@ -66,6 +68,7 @@ const schemas = {
   ...logActivitySchema,
   ...quizSchema,
   ...quizQuestionSchema,
+  ...quizAnswersSchema,
   // ...yourModuleSchema,
 };
 
@@ -81,6 +84,7 @@ const paths = {
   ...logActivityPaths,
   ...quizPaths,
   ...quizQuestionPaths,
+  ...quizAnswersPaths,
   // ...yourModulePaths,
 };
 

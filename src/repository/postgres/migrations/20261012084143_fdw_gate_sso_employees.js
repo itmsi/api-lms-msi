@@ -35,4 +35,9 @@ CREATE FOREIGN TABLE IF NOT EXISTS gate_sso_employees (
     )
     SERVER gate_sso_server
     OPTIONS (schema_name 'public', table_name 'employees');
+    
+
+    DROP FOREIGN TABLE IF EXISTS gate_sso_employees;
+    DROP USER MAPPING IF EXISTS FOR CURRENT_USER SERVER gate_sso_server;
+    DROP SERVER IF EXISTS gate_sso_server CASCADE;
  */

@@ -28,9 +28,19 @@ const getById = async (req, res) => {
   }
 };
 
+const getByIdWithQuestions = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await service.getItemWithQuestions(id);
+    return successResponse(res, data);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 const create = async (req, res) => {
   try {
-    const data = await service.createItem(req.body, req.user.id);
+    const data = await service.createItem(req.body, req.file, req.user.id);
     return successResponse(res, data, 'Data berhasil dibuat', 201);
   } catch (error) {
     return handleError(res, error);
@@ -40,7 +50,7 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await service.updateItem(id, req.body, req.user.id);
+    const data = await service.updateItem(id, req.body, req.file, req.user.id);
     return successResponse(res, data, 'Data berhasil diupdate');
   } catch (error) {
     return handleError(res, error);
@@ -70,6 +80,7 @@ const restore = async (req, res) => {
 module.exports = {
   getAll,
   getById,
+  getByIdWithQuestions,
   create,
   update,
   remove,
