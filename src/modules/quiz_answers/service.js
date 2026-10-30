@@ -1,6 +1,7 @@
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const repository = require('./repository');
+const quizService = require('../quiz/service');
 const {
   client,
   ensureDirectoryExists,
@@ -42,6 +43,15 @@ const uploadFile = async (file) => {
 
 const getAllItems = async (params = {}) => {
   return await repository.findAll(params);
+};
+
+const getQuizzes = async (params = {}) => {
+  return await repository.findQuizzes(params);
+};
+
+// sama seperti GET /quizzes/quizzes-answers/:id (detail quiz beserta soal ringkas id & line)
+const getQuizById = async (id) => {
+  return await quizService.getItemWithQuestions(id);
 };
 
 const getItemById = async (id) => {
@@ -110,6 +120,8 @@ const restoreItem = async (id, actorId) => {
 
 module.exports = {
   getAllItems,
+  getQuizzes,
+  getQuizById,
   getItemById,
   createItem,
   getQuestionWithAnswer,

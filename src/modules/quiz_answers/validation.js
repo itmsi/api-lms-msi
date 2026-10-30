@@ -1,4 +1,5 @@
 const { body, param } = require('express-validator');
+const { listValidation: quizListValidation } = require('../quiz/validation');
 
 const idParam = param('id')
   .notEmpty()
@@ -59,6 +60,16 @@ const questionValidation = [
     .withMessage('Format created_by tidak valid')
 ];
 
+// filter sama seperti POST /quizzes/get, ditambah created_by (wajib) untuk rekap pengerjaan user
+const quizzesValidation = [
+  ...quizListValidation,
+  body('created_by')
+    .notEmpty()
+    .withMessage('created_by wajib diisi')
+    .isUUID()
+    .withMessage('Format created_by tidak valid')
+];
+
 const listValidation = [
   body('page')
     .optional()
@@ -97,5 +108,6 @@ module.exports = {
   createValidation,
   getByIdValidation,
   questionValidation,
+  quizzesValidation,
   listValidation
 };

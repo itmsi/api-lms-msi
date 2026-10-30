@@ -5,6 +5,7 @@ const {
   createValidation,
   getByIdValidation,
   questionValidation,
+  quizzesValidation,
   listValidation
 } = require('./validation');
 const { validateMiddleware } = require('../../middlewares/validation');
@@ -25,6 +26,34 @@ router.post(
   listValidation,
   validateMiddleware,
   controller.getAll
+);
+
+/**
+ * @route   POST /api/lms/quiz-answers/quizzes/get
+ * @desc    Get all quizzes (filter sama seperti POST /quizzes/get) beserta rekap pengerjaan
+ *          user created_by (completed_count, uncompleted_count, total_point dari quiz_users)
+ * @access  Protected (hak akses quiz-answers.quizzes)
+ */
+router.post(
+  '/quizzes/get',
+  authorize,
+  quizzesValidation,
+  validateMiddleware,
+  controller.getQuizzes
+);
+
+/**
+ * @route   GET /api/lms/quiz-answers/quizzes/get/:id
+ * @desc    Get quiz by ID beserta daftar soal ringkas (id & line),
+ *          sama seperti GET /api/lms/quizzes/quizzes-answers/:id
+ * @access  Protected (hak akses quiz-answers.quizzes-detail)
+ */
+router.get(
+  '/quizzes/get/:id',
+  authorize,
+  getByIdValidation,
+  validateMiddleware,
+  controller.getQuizById
 );
 
 /**

@@ -54,6 +54,24 @@ const quizAnswersSchemas = {
       answers: { type: 'array', description: 'Jawaban user pada quiz ini (urut berdasarkan line soal)', items: { $ref: '#/components/schemas/QuizAnswer' } }
     }
   },
+  QuizWithProgress: {
+    type: 'object',
+    description: 'Quiz beserta rekap pengerjaan user (quiz_users). Rekap null jika user belum pernah menjawab quiz ini.',
+    properties: {
+      quizzes_id: { type: 'string', format: 'uuid', example: '1e511992-d3fc-4b9b-9a9f-c83846bcc93c' },
+      title: { type: 'string', example: 'Ujian Pemahaman Onboarding Umum' },
+      modules_id: { type: 'string', format: 'uuid', nullable: true, example: 'faf8a9f8-f779-4ea3-8bb4-d23607d10b31' },
+      module_title: { type: 'string', nullable: true, example: 'Pengenalan JavaScript' },
+      type: { type: 'array', items: { type: 'string', enum: ['reguler', 'mt'] }, example: ['reguler'] },
+      start_date: { type: 'string', format: 'date', nullable: true, example: '2026-11-03' },
+      end_date: { type: 'string', format: 'date', nullable: true, example: '2026-12-31' },
+      question_count: { type: 'integer', description: 'Jumlah soal aktif pada quiz ini', example: 10 },
+      banner: { type: 'string', nullable: true, description: 'Share link banner dari Nextcloud (preview)', example: 'https://cloud.inlinegroupdc.com/s/gfpcTJFcA5gH3DC/preview' },
+      completed_count: { type: 'string', nullable: true, description: 'quiz_users.completed_count', example: '8' },
+      uncompleted_count: { type: 'string', nullable: true, description: 'quiz_users.uncompleted_count', example: '2' },
+      total_point: { type: 'string', nullable: true, description: 'quiz_users.total_point', example: '80' }
+    }
+  },
   QuizAnswerQuestionRequest: {
     type: 'object',
     required: ['quiz_question_id', 'created_by'],

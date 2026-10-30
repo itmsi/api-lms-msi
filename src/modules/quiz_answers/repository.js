@@ -103,6 +103,76 @@ const findAll = async (params = {}) => {
   };
 };
 
+const QUIZ_SORTABLE = {
+  title: 'quizzes.title',
+  start_date: 'quizzes.start_date',
+  end_date: 'quizzes.end_date',
+  created_at: 'quizzes.created_at',
+  updated_at: 'quizzes.updated_at'
+};
+
+// kolom quiz sama seperti list quizzes, ditambah rekap pengerjaan user (quiz_users)
+const QUIZ_COLUMNS = [
+  'quizzes.id as quizzes_id',
+  'quizzes.title',
+  'quizzes.modules_id',
+  'modules.title as module_title',
+  'quizzes.type',
+  db.raw(`to_char(quizzes.start_date, 'YYYY-MM-DD') as start_date`),
+  db.raw(`to_char(quizzes.end_date, 'YYYY-MM-DD') as end_date`),
+  db.raw(`(SELECT count(*)::int FROM quiz_questions qq WHERE qq.quizzes_id = quizzes.id AND qq.is_delete = false) as question_count`),
+  db.raw(`CASE WHEN quizzes.banner IS NOT NULL AND quizzes.banner <> '' THEN concat_ws('', quizzes.banner, '/preview'::text) ELSE quizzes.banner END as banner`),
+  'quiz_users.completed_count',
+  'quiz_users.uncompleted_count',
+  'quiz_users.total_point'
+];
+
+/**
+ * Daftar quiz (filter sama seperti POST /quizzes/get) beserta rekap pengerjaan user created_by.
+ * Rekap bernilai null jika user belum pernah menjawab quiz tersebut.
+ */
+const findQuizzes = async (params = {}) => {
+  const { page, limit, sortColumn, sortOrder, search } = normalizeListParams(params, {
+    sortable: QUIZ_SORTABLE,
+    defaultSort: 'created_at',
+    defaultOrder: 'desc'
+  });
+  const offset = (page - 1) * limit;
+
+  const base = () => {
+    const q = db('quizzes')
+      .leftJoin('modules', 'modules.id', 'quizzes.modules_id')
+      .where('quizzes.is_delete', false);
+    if (params.modules_id) q.andWhere('quizzes.modules_id', params.modules_id);
+    if (params.type) q.andWhereRaw('quizzes.type @> ?::jsonb', [JSON.stringify([params.type])]);
+    if (search) q.andWhereILike('quizzes.title', `%${search}%`);
+    return q;
+  };
+
+  const items = await base()
+    .leftJoin(TABLE_NAME, function () {
+      this.on('quiz_users.quizze_id', 'quizzes.id')
+        .andOn('quiz_users.created_by', db.raw('?', [params.created_by]))
+        .andOn('quiz_users.is_delete', db.raw('false'));
+    })
+    .select(QUIZ_COLUMNS)
+    .orderBy(sortColumn, sortOrder)
+    .limit(limit)
+    .offset(offset);
+
+  const total = await base().count('quizzes.id as count').first();
+
+  return {
+    items,
+    pagination: {
+      page,
+      limit,
+      total: parseInt(total.count),
+      totalPages: Math.ceil(total.count / limit)
+    }
+  };
+};
+
 const findById = async (id) => {
   return await baseQuery()
     .where({ "quiz_users.id": id, "quiz_users.is_delete": false })
@@ -370,6 +440,7 @@ const findQuestion = async (questionId) => {
 
 module.exports = {
   findAll,
+  findQuizzes,
   findById,
   findAnswers,
   upsert,

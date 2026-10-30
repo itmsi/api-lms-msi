@@ -1,7 +1,7 @@
 /**
  * Swagger API Path Definitions for Quiz Answers Module
  */
-const { crudPaths, json, envelope, errorResponse, ref, authErrors } = require('./_crud');
+const { crudPaths, listRequest, json, envelope, errorResponse, idParam, ref, authErrors } = require('./_crud');
 
 const multipart = (schemaName) => ({ 'multipart/form-data': { schema: ref(schemaName) } });
 
@@ -43,6 +43,50 @@ create.responses = {
   ...authErrors,
   201: { description: 'Saved successfully', content: json(envelope(ref('QuizAnswerSaveResult'), 'Data berhasil disimpan')) },
   400: errorResponse('Validation error (mis. soal tidak ditemukan)')
+};
+
+const quizzesRequest = listRequest(['title', 'start_date', 'end_date', 'created_at', 'updated_at'], 'created_at', 'desc', {
+  modules_id: { type: 'string', format: 'uuid', description: 'Filter berdasarkan module', example: '' },
+  type: { type: 'string', enum: ['reguler', 'mt'], description: 'Filter quiz yang audiensnya mengandung nilai ini', example: 'reguler' },
+  created_by: { type: 'string', format: 'uuid', description: 'Wajib. id user yang rekap pengerjaannya ditampilkan', example: 'f0b57258-5f33-4e03-81f7-cd70d833b5c5' }
+});
+quizzesRequest.required = ['created_by'];
+
+quizAnswersPaths['/quiz-answers/quizzes/get'] = {
+  post: {
+    tags: ['Quiz Answers'],
+    summary: 'Get all quizzes beserta rekap pengerjaan user',
+    description: 'Proses sama seperti POST /quizzes/get (pagination, sorting, search judul, filter modules_id & type), ditambah completed_count, uncompleted_count, total_point dari quiz_users milik created_by. Nilai rekap null jika user belum pernah menjawab quiz tersebut.',
+    requestBody: { required: true, content: json(quizzesRequest) },
+    responses: {
+      ...authErrors,
+      200: {
+        description: 'Success',
+        content: json(envelope({
+          type: 'object',
+          properties: {
+            items: { type: 'array', items: ref('QuizWithProgress') },
+            pagination: ref('Pagination')
+          }
+        }, 'Success'))
+      },
+      400: errorResponse('Validation error')
+    }
+  }
+};
+
+quizAnswersPaths['/quiz-answers/quizzes/get/{id}'] = {
+  get: {
+    tags: ['Quiz Answers'],
+    summary: 'Get quiz by ID beserta soal',
+    description: 'Proses sama seperti GET /quizzes/quizzes-answers/{id}: detail quiz ditambah questions (daftar soal aktif, hanya id & line, urut berdasarkan line)',
+    parameters: [idParam('quiz')],
+    responses: {
+      ...authErrors,
+      200: { description: 'Success', content: json(envelope(ref('QuizDetailWithQuestions'), 'Success')) },
+      404: errorResponse('Not found')
+    }
+  }
 };
 
 quizAnswersPaths['/quiz-answers/questions'] = {

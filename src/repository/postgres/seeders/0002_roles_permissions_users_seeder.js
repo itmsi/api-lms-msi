@@ -125,8 +125,20 @@ permissions.push({
   description: "Lihat detail Quiz beserta daftar soal (id & line) untuk pengerjaan quiz",
 });
 
-// Hak akses tambahan: soal quiz beserta jawaban user
+// Hak akses tambahan: soal quiz beserta jawaban user, dan daftar quiz beserta rekap pengerjaan user
 permissions.push({
+  code: "quiz-answers.quizzes",
+  name: "Lihat daftar Quiz beserta rekap pengerjaan user",
+  method: "POST",
+  endpoint: `${API_PREFIX}/quiz-answers/quizzes/get`,
+  description: "Lihat daftar Quiz beserta rekap pengerjaan user tertentu",
+}, {
+  code: "quiz-answers.quizzes-detail",
+  name: "Lihat detail Quiz beserta soal (jawaban quiz)",
+  method: "GET",
+  endpoint: `${API_PREFIX}/quiz-answers/quizzes/get/:id`,
+  description: "Lihat detail Quiz beserta daftar soal (id & line) untuk pengerjaan quiz",
+}, {
   code: "quiz-answers.questions",
   name: "Lihat soal Quiz beserta jawaban user",
   method: "POST",
@@ -197,6 +209,8 @@ const rolePermissionMap = {
     "quiz-answers.delete",
     "quiz-answers.restore",
     "quiz-answers.questions",
+    "quiz-answers.quizzes",
+    "quiz-answers.quizzes-detail",
     "log-activity.read",
     "log-activity.create",
   ],
@@ -216,6 +230,8 @@ const rolePermissionMap = {
     "quiz-answers.detail",
     "quiz-answers.create",
     "quiz-answers.questions",
+    "quiz-answers.quizzes",
+    "quiz-answers.quizzes-detail",
     "log-activity.read",
     "log-activity.create",
   ],

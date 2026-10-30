@@ -18,6 +18,25 @@ const getAll = async (req, res) => {
   }
 };
 
+const getQuizzes = async (req, res) => {
+  try {
+    const data = await service.getQuizzes(req.body);
+    return successResponse(res, data);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const getQuizById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await service.getQuizById(id);
+    return successResponse(res, data);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 const getById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -68,6 +87,8 @@ const restore = async (req, res) => {
 
 module.exports = {
   getAll,
+  getQuizzes,
+  getQuizById,
   getById,
   create,
   getQuestion,
