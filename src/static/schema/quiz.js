@@ -25,22 +25,37 @@ const quizProps = {
   },
   start_date: { type: 'string', format: 'date', nullable: true, description: 'Tanggal mulai (YYYY-MM-DD)', example: '2026-11-03' },
   end_date: { type: 'string', format: 'date', nullable: true, description: 'Tanggal berakhir (YYYY-MM-DD)', example: '2026-12-31' },
-  question_count: { type: 'integer', description: 'Jumlah soal aktif pada quiz ini', example: 10 }
+  question_count: { type: 'integer', description: 'Jumlah soal aktif pada quiz ini', example: 10 },
+  banner: {
+    type: 'string',
+    nullable: true,
+    description: 'Share link banner dari Nextcloud (preview)',
+    example: 'https://cloud.example.com/s/AbCdEfGh/preview'
+  }
+};
+
+const typeInput = {
+  type: 'array',
+  description: 'Audiens quiz, minimal 1 item. Di multipart/form-data dikirim sebagai field berulang (type=reguler&type=mt), string JSON array, atau string dipisah koma.',
+  items: { type: 'string', enum: ['reguler', 'mt'] },
+  example: ['reguler', 'mt']
+};
+
+const bannerInput = {
+  type: 'string',
+  format: 'binary',
+  description: 'File gambar banner (jpg/jpeg/png/webp/gif, maksimal 5MB). Jika dikirim, selalu menggantikan banner lama.'
 };
 
 const quizSchemas = {
   Quiz: {
     type: 'object',
-    properties: { ...quizProps, ...auditProps }
+    description: 'Item list quiz',
+    properties: { ...quizProps, created_at: auditProps.created_at, updated_at: auditProps.updated_at }
   },
   QuizDetail: {
     type: 'object',
-    description: 'Quiz beserta daftar soalnya (urut berdasarkan line)',
-    properties: {
-      ...quizProps,
-      ...auditProps,
-      questions: { type: 'array', items: { $ref: '#/components/schemas/QuizQuestion' } }
-    }
+    properties: { ...quizProps, ...auditProps }
   },
   QuizInput: {
     type: 'object',
@@ -48,15 +63,27 @@ const quizSchemas = {
     properties: {
       title: { type: 'string', minLength: 3, maxLength: 255, example: 'Ujian Pemahaman Onboarding Umum' },
       modules_id: { type: 'string', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' },
-      type: {
-        type: 'array',
-        minItems: 1,
-        description: 'Audiens quiz, minimal 1 item',
-        items: { type: 'string', enum: ['reguler', 'mt'] },
-        example: ['reguler', 'mt']
-      },
+      type: { ...typeInput, minItems: 1 },
       start_date: { type: 'string', format: 'date', example: '2026-11-03' },
-      end_date: { type: 'string', format: 'date', description: 'Tidak boleh sebelum start_date', example: '2026-12-31' }
+      end_date: { type: 'string', format: 'date', description: 'Tidak boleh sebelum start_date', example: '2026-12-31' },
+      banner: bannerInput
+    }
+  },
+  QuizUpdateInput: {
+    type: 'object',
+    description: 'Semua field opsional (update parsial)',
+    properties: {
+      title: { type: 'string', minLength: 3, maxLength: 255, example: 'Ujian Pemahaman Onboarding Umum' },
+      modules_id: { type: 'string', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' },
+      type: typeInput,
+      start_date: { type: 'string', format: 'date', example: '2026-11-03' },
+      end_date: { type: 'string', format: 'date', description: 'Tidak boleh sebelum start_date', example: '2026-12-31' },
+      banner: bannerInput,
+      banner_delete: {
+        type: 'boolean',
+        description: 'Jika true, hapus banner yang ada (banner jadi null). Jika false/tidak dikirim, banner lama dipertahankan. Diabaikan jika ada file banner baru.',
+        example: false
+      }
     }
   }
 };

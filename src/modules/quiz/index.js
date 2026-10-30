@@ -9,6 +9,7 @@ const {
 } = require('./validation');
 const { validateMiddleware } = require('../../middlewares/validation');
 const { authenticate, authorize } = require('../../middlewares/auth');
+const { handleBannerUpload } = require('../../middlewares/imageUpload');
 
 router.use(authenticate);
 
@@ -40,12 +41,13 @@ router.get(
 
 /**
  * @route   POST /api/lms/quizzes/create
- * @desc    Create new quiz
+ * @desc    Create new quiz (multipart/form-data, field file: banner)
  * @access  Protected (hak akses quizzes.*)
  */
 router.post(
   '/create',
   authorize,
+  handleBannerUpload,
   createValidation,
   validateMiddleware,
   controller.create
@@ -53,12 +55,13 @@ router.post(
 
 /**
  * @route   PUT /api/lms/quizzes/:id
- * @desc    Update quiz
+ * @desc    Update quiz (multipart/form-data, field file: banner opsional)
  * @access  Protected (hak akses quizzes.*)
  */
 router.put(
   '/:id',
   authorize,
+  handleBannerUpload,
   updateValidation,
   validateMiddleware,
   controller.update

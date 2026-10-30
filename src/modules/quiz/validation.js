@@ -8,10 +8,31 @@ const idParam = param('id')
   .isUUID()
   .withMessage('Format ID tidak valid');
 
+// request dikirim sebagai multipart/form-data (karena ada file banner), jadi type bisa datang sebagai
+// field berulang (type=reguler&type=mt), string JSON array ('["reguler","mt"]'), atau string dipisah koma
+const parseType = (value) => {
+  if (typeof value !== 'string') return value;
+
+  const trimmed = value.trim();
+  if (!trimmed) return [];
+
+  if (trimmed.startsWith('[')) {
+    try {
+      return JSON.parse(trimmed);
+    } catch {
+      // bukan JSON valid, biarkan gagal di validasi isArray di bawah
+      return value;
+    }
+  }
+
+  return trimmed.split(',').map((item) => item.trim()).filter(Boolean);
+};
+
 // format: ["reguler", "mt"] (minimal 1, tanpa duplikat)
 const typeBody = (required) => {
   const chain = body('type');
   return (required ? chain.exists().withMessage('type wajib diisi') : chain.optional())
+    .customSanitizer(parseType)
     .isArray({ min: 1 })
     .withMessage(`type harus berupa array minimal 1 item (${QUIZ_AUDIENCES.join(', ')})`)
     .bail()
@@ -76,7 +97,12 @@ const updateValidation = [
   typeBody(false),
   dateBody('start_date', false),
   dateBody('end_date', false),
-  endAfterStart
+  endAfterStart,
+  body('banner_delete')
+    .optional()
+    .isBoolean()
+    .withMessage('banner_delete harus berupa boolean')
+    .toBoolean()
 ];
 
 const getByIdValidation = [idParam];
