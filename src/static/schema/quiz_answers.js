@@ -1,6 +1,7 @@
 /**
  * Swagger Schema Definitions for Quiz Answers Module
  */
+const quizSchemas = require('./quiz');
 
 const auditProps = {
   created_at: { type: 'string', format: 'date-time', example: '2026-11-01T00:00:00.000Z' },
@@ -52,6 +53,28 @@ const quizAnswersSchemas = {
     properties: {
       ...quizUserProps,
       answers: { type: 'array', description: 'Jawaban user pada quiz ini (urut berdasarkan line soal)', items: { $ref: '#/components/schemas/QuizAnswer' } }
+    }
+  },
+  QuizAnswerQuizDetail: {
+    type: 'object',
+    description: 'Detail quiz beserta daftar soal ringkas (urut berdasarkan line)',
+    properties: {
+      ...quizSchemas.QuizDetail.properties,
+      questions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid', example: '5a8d9e10-1b2c-4d3e-8f40-a1b2c3d4e5f6' },
+            line: { type: 'integer', example: 1 },
+            question: {
+              type: 'string',
+              description: 'Potongan teks soal (tag HTML dibuang), maksimal 25 karakter lalu diakhiri "..." jika lebih panjang',
+              example: 'Anda menerima email yang ...'
+            }
+          }
+        }
+      }
     }
   },
   QuizWithProgress: {

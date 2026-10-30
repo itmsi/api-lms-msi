@@ -49,9 +49,28 @@ const getQuizzes = async (params = {}) => {
   return await repository.findQuizzes(params);
 };
 
-// sama seperti GET /quizzes/quizzes-answers/:id (detail quiz beserta soal ringkas id & line)
+const QUESTION_PREVIEW_LENGTH = 25;
+
+// teks soal bisa berupa HTML dari rich text editor: buang tag & &nbsp; dulu agar potongan tidak memotong tag,
+// lalu potong jadi maksimal QUESTION_PREVIEW_LENGTH karakter + '...'
+const previewQuestion = (html) => {
+  const text = String(html || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;|&#160;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.length > QUESTION_PREVIEW_LENGTH ? `${text.slice(0, QUESTION_PREVIEW_LENGTH)}...` : text;
+};
+
+// detail quiz (sama seperti GET /quizzes/:id) beserta soal ringkas: id, line, question (dipotong)
 const getQuizById = async (id) => {
-  return await quizService.getItemWithQuestions(id);
+  const data = await quizService.getItemById(id);
+  const questions = await repository.findQuizQuestions(id);
+
+  return {
+    ...data,
+    questions: questions.map((q) => ({ ...q, question: previewQuestion(q.question) }))
+  };
 };
 
 const getItemById = async (id) => {

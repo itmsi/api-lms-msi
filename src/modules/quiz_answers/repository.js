@@ -432,6 +432,15 @@ const findAnswerOfUser = async (questionId, userId) => {
     );
 };
 
+// daftar soal ringkas milik quiz, dipakai GET /quiz-answers/quizzes/get/:id
+const findQuizQuestions = async (quizId) => {
+  return await db('quiz_questions')
+    .where({ quizzes_id: quizId, is_delete: false })
+    .select('id', 'line', 'question')
+    .orderBy('line', 'asc')
+    .orderBy('created_at', 'asc');
+};
+
 const findQuestion = async (questionId) => {
   return await db("quiz_questions")
     .where({ id: questionId, is_delete: false })
@@ -447,6 +456,7 @@ module.exports = {
   remove,
   restore,
   findQuestion,
+  findQuizQuestions,
   findQuestionDetail,
   findAnswerOfUser,
 };

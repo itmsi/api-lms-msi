@@ -79,11 +79,11 @@ quizAnswersPaths['/quiz-answers/quizzes/get/{id}'] = {
   get: {
     tags: ['Quiz Answers'],
     summary: 'Get quiz by ID beserta soal',
-    description: 'Proses sama seperti GET /quizzes/quizzes-answers/{id}: detail quiz ditambah questions (daftar soal aktif, hanya id & line, urut berdasarkan line)',
+    description: 'Detail quiz (sama seperti GET /quizzes/{id}) ditambah questions: daftar soal aktif (id, line, question) urut berdasarkan line. question berupa potongan teks soal tanpa tag HTML, maksimal 25 karakter lalu diakhiri "..." jika lebih panjang.',
     parameters: [idParam('quiz')],
     responses: {
       ...authErrors,
-      200: { description: 'Success', content: json(envelope(ref('QuizDetailWithQuestions'), 'Success')) },
+      200: { description: 'Success', content: json(envelope(ref('QuizAnswerQuizDetail'), 'Success')) },
       404: errorResponse('Not found')
     }
   }

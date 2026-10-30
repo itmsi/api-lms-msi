@@ -33,7 +33,11 @@ const BASE_COLUMNS = [
 ];
 
 // kolom untuk list (GET /quizzes)
-const LIST_COLUMNS = [...BASE_COLUMNS, "quizzes.created_at", "quizzes.updated_at"];
+const LIST_COLUMNS = [
+  ...BASE_COLUMNS,
+  "quizzes.created_at",
+  "quizzes.updated_at",
+];
 
 // kolom untuk detail (GET /quizzes/{id}, hasil create/update/restore)
 const DETAIL_COLUMNS = [
@@ -101,7 +105,7 @@ const findById = async (id) => {
 const findQuestions = async (quizId) => {
   return await db("quiz_questions")
     .where({ quizzes_id: quizId, is_delete: false })
-    .select("id", "line")
+    .select("id", "line", "question")
     .orderBy("line", "asc")
     .orderBy("created_at", "asc");
 };
