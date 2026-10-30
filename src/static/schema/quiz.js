@@ -57,6 +57,24 @@ const quizSchemas = {
     type: 'object',
     properties: { ...quizProps, ...auditProps }
   },
+  QuizDetailWithQuestions: {
+    type: 'object',
+    description: 'Detail quiz beserta daftar soal ringkas (urut berdasarkan line)',
+    properties: {
+      ...quizProps,
+      ...auditProps,
+      questions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid', example: '5a8d9e10-1b2c-4d3e-8f40-a1b2c3d4e5f6' },
+            line: { type: 'integer', example: 1 }
+          }
+        }
+      }
+    }
+  },
   QuizInput: {
     type: 'object',
     required: ['title', 'modules_id', 'type', 'start_date', 'end_date'],

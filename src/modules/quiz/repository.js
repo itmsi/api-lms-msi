@@ -97,6 +97,15 @@ const findById = async (id) => {
     .first(DETAIL_COLUMNS);
 };
 
+// daftar soal ringkas (id & line) milik quiz, dipakai GET /quizzes/quizzes-answers/:id
+const findQuestions = async (quizId) => {
+  return await db("quiz_questions")
+    .where({ quizzes_id: quizId, is_delete: false })
+    .select("id", "line")
+    .orderBy("line", "asc")
+    .orderBy("created_at", "asc");
+};
+
 const create = async (data, actorId = null) => {
   const [result] = await db(TABLE_NAME)
     .insert({
@@ -192,6 +201,7 @@ const moduleExists = async (moduleId) => {
 module.exports = {
   findAll,
   findById,
+  findQuestions,
   create,
   update,
   remove,

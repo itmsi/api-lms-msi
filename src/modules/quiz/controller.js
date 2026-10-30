@@ -28,6 +28,16 @@ const getById = async (req, res) => {
   }
 };
 
+const getByIdWithQuestions = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await service.getItemWithQuestions(id);
+    return successResponse(res, data);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 const create = async (req, res) => {
   try {
     const data = await service.createItem(req.body, req.file, req.user.id);
@@ -70,6 +80,7 @@ const restore = async (req, res) => {
 module.exports = {
   getAll,
   getById,
+  getByIdWithQuestions,
   create,
   update,
   remove,

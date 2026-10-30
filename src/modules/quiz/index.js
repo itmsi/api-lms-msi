@@ -40,6 +40,19 @@ router.get(
 );
 
 /**
+ * @route   GET /api/lms/quizzes/quizzes-answers/:id
+ * @desc    Get quiz by ID beserta daftar soal ringkas (id & line), untuk halaman pengerjaan quiz
+ * @access  Protected (hak akses quizzes.detail-answers)
+ */
+router.get(
+  '/quizzes-answers/:id',
+  authorize,
+  getByIdValidation,
+  validateMiddleware,
+  controller.getByIdWithQuestions
+);
+
+/**
  * @route   POST /api/lms/quizzes/create
  * @desc    Create new quiz (multipart/form-data, field file: banner)
  * @access  Protected (hak akses quizzes.*)

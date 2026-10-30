@@ -42,6 +42,7 @@ const resources = [
   { key: "chapters", label: "Chapter", endpoint: `${API_PREFIX}/chapters` },
   { key: "quizzes", label: "Quiz", endpoint: `${API_PREFIX}/quizzes` },
   { key: "quiz-questions", label: "Soal Quiz", endpoint: `${API_PREFIX}/quiz-questions`},
+  { key: "quiz-answers", label: "Jawaban Quiz", endpoint: `${API_PREFIX}/quiz-answers`, only: ["read", "detail", "create", "delete", "restore"] },
   { key: "log-activity", label: "Log Activity", endpoint: `${API_PREFIX}/log-activity`, only: ["read", "create"],
   },
 ];
@@ -115,6 +116,24 @@ permissions.push(
   },
 );
 
+// Hak akses tambahan: detail quiz beserta daftar soal ringkas untuk pengerjaan quiz
+permissions.push({
+  code: "quizzes.detail-answers",
+  name: "Lihat detail Quiz beserta soal (pengerjaan)",
+  method: "GET",
+  endpoint: `${API_PREFIX}/quizzes/quizzes-answers/:id`,
+  description: "Lihat detail Quiz beserta daftar soal (id & line) untuk pengerjaan quiz",
+});
+
+// Hak akses tambahan: soal quiz beserta jawaban user
+permissions.push({
+  code: "quiz-answers.questions",
+  name: "Lihat soal Quiz beserta jawaban user",
+  method: "POST",
+  endpoint: `${API_PREFIX}/quiz-answers/questions`,
+  description: "Lihat soal Quiz beserta jawaban user tertentu",
+});
+
 // Hak akses tambahan: export log activity ke excel
 permissions.push({
   code: "log-activity.export",
@@ -171,6 +190,13 @@ const rolePermissionMap = {
       `${r}.delete`,
       `${r}.restore`,
     ]),
+    "quizzes.detail-answers",
+    "quiz-answers.read",
+    "quiz-answers.detail",
+    "quiz-answers.create",
+    "quiz-answers.delete",
+    "quiz-answers.restore",
+    "quiz-answers.questions",
     "log-activity.read",
     "log-activity.create",
   ],
@@ -183,8 +209,13 @@ const rolePermissionMap = {
     "chapters.detail",
     "quizzes.read",
     "quizzes.detail",
+    "quizzes.detail-answers",
     "quiz-questions.read",
     "quiz-questions.detail",
+    "quiz-answers.read",
+    "quiz-answers.detail",
+    "quiz-answers.create",
+    "quiz-answers.questions",
     "log-activity.read",
     "log-activity.create",
   ],

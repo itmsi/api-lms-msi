@@ -1,7 +1,7 @@
 /**
  * Swagger API Path Definitions for Quiz Module
  */
-const { crudPaths, ref } = require('./_crud');
+const { crudPaths, ref, json, envelope, errorResponse, idParam, authErrors } = require('./_crud');
 
 const quizPaths = crudPaths({
   tag: 'Quizzes',
@@ -25,5 +25,19 @@ quizPaths['/quizzes/{id}'].put.requestBody.content = { 'multipart/form-data': { 
 quizPaths['/quizzes/{id}'].put.description = 'Update an existing quiz. Dikirim sebagai multipart/form-data, semua field opsional (update parsial). Banner lama dipertahankan jika tidak ada file baru; gunakan banner_delete=true untuk menghapus banner. Menghapus quiz ikut meng-soft-delete seluruh soalnya.';
 quizPaths['/quizzes/{id}'].delete.description = 'Soft delete a quiz beserta seluruh soalnya';
 quizPaths['/quizzes/{id}/restore'].post.description = 'Restore a soft-deleted quiz beserta soal-soal yang ikut terhapus bersamanya';
+
+quizPaths['/quizzes/quizzes-answers/{id}'] = {
+  get: {
+    tags: ['Quizzes'],
+    summary: 'Get quiz by ID beserta soal (pengerjaan)',
+    description: 'Sama seperti GET /quizzes/{id}, ditambah questions: daftar soal aktif milik quiz ini (hanya id & line, urut berdasarkan line)',
+    parameters: [idParam('quiz')],
+    responses: {
+      ...authErrors,
+      200: { description: 'Success', content: json(envelope(ref('QuizDetailWithQuestions'), 'Success')) },
+      404: errorResponse('Not found')
+    }
+  }
+};
 
 module.exports = quizPaths;

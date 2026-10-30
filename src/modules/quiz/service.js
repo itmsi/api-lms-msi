@@ -66,6 +66,13 @@ const getItemById = async (id) => {
   return data;
 };
 
+// sama seperti getItemById, ditambah daftar soal ringkas (id & line)
+const getItemWithQuestions = async (id) => {
+  const data = await getItemById(id);
+  const questions = await repository.findQuestions(id);
+  return { ...data, questions };
+};
+
 const createItem = async (itemData, file, actorId) => {
   await assertModule(itemData.modules_id);
   assertPeriod(itemData.start_date, itemData.end_date);
@@ -128,6 +135,7 @@ const restoreItem = async (id, actorId) => {
 module.exports = {
   getAllItems,
   getItemById,
+  getItemWithQuestions,
   createItem,
   updateItem,
   deleteItem,
