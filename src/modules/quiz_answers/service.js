@@ -82,7 +82,11 @@ const getQuestionWithAnswer = async ({ quiz_question_id: questionId, created_by:
   }
 
   const answer = await repository.findAnswerOfUser(questionId, userId);
-  return { ...question, answer: answer || null };
+
+  // kunci jawaban (is_correct) tidak dikirim ke klien
+  const options = (question.options || []).map(({ is_correct, ...option }) => option);
+
+  return { ...question, options, answer: answer || null };
 };
 
 const deleteItem = async (id, actorId) => {

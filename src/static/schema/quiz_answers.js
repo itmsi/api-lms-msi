@@ -73,7 +73,21 @@ const quizAnswersSchemas = {
       estimated_time: { type: 'integer', nullable: true, example: 1 },
       estimated_time_unit: { type: 'string', enum: ['minutes', 'seconds'], example: 'minutes' },
       points: { type: 'integer', description: 'Poin soal', example: 2 },
-      options: { type: 'array', items: { $ref: '#/components/schemas/QuizQuestionOption' } },
+      options: {
+        type: 'array',
+        description: 'Opsi jawaban tanpa kunci jawaban (is_correct tidak dikirim)',
+        items: {
+          type: 'object',
+          properties: {
+            line: { type: 'integer', example: 1 },
+            text: { type: 'string', example: 'Laporkan ke tim IT' }
+          }
+        },
+        example: [
+          { line: 1, text: 'Klik tautannya' },
+          { line: 2, text: 'Laporkan ke tim IT' }
+        ]
+      },
       image: { type: 'string', nullable: true, description: 'Link gambar soal (Nextcloud share link + /preview)', example: null },
       answer: {
         type: 'object',
