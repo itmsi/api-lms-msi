@@ -65,6 +65,15 @@ const getQuestion = async (req, res) => {
   }
 };
 
+const getResults = async (req, res) => {
+  try {
+    const data = await service.getResults(req.body);
+    return successResponse(res, data);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 const remove = async (req, res) => {
   try {
     const { id } = req.params;
@@ -92,6 +101,7 @@ module.exports = {
   getById,
   create,
   getQuestion,
+  getResults,
   remove,
   restore
 };

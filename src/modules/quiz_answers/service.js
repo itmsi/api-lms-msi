@@ -118,6 +118,32 @@ const getQuestionWithAnswer = async ({ quiz_question_id: questionId, created_by:
   return { ...question, options, answer: answer || null };
 };
 
+// hasil pengerjaan quiz milik user: data quiz, rekap quiz_users, dan seluruh soal beserta jawabannya
+const getResults = async ({ quizzes_id: quizId, created_by: userId }) => {
+  const quiz = await repository.findResultQuiz(quizId, userId);
+  if (!quiz) {
+    throw { message: 'Quiz tidak ditemukan', statusCode: 404 };
+  }
+
+  const rows = await repository.findResultQuestions(quizId, userId);
+
+  const questions = rows.map(({
+    quiz_answer_id: answerId,
+    answer_answers: answers,
+    answer_points: points,
+    answer_admin_points: adminPoints,
+    answer_files: files,
+    ...question
+  }) => ({
+    ...question,
+    answer: answerId
+      ? { quiz_answer_id: answerId, answers, points, admin_points: adminPoints, files }
+      : null
+  }));
+
+  return { ...quiz, questions };
+};
+
 const deleteItem = async (id, actorId) => {
   const existingItem = await repository.findById(id);
   if (!existingItem) {
@@ -144,6 +170,7 @@ module.exports = {
   getItemById,
   createItem,
   getQuestionWithAnswer,
+  getResults,
   deleteItem,
   restoreItem
 };

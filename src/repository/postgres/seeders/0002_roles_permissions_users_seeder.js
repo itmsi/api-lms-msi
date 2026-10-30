@@ -144,6 +144,12 @@ permissions.push({
   method: "POST",
   endpoint: `${API_PREFIX}/quiz-answers/questions`,
   description: "Lihat soal Quiz beserta jawaban user tertentu",
+}, {
+  code: "quiz-answers.results",
+  name: "Lihat hasil pengerjaan Quiz user",
+  method: "POST",
+  endpoint: `${API_PREFIX}/quiz-answers/results`,
+  description: "Lihat hasil pengerjaan Quiz user tertentu beserta seluruh soal dan jawabannya",
 });
 
 // Hak akses tambahan: export log activity ke excel
@@ -211,6 +217,7 @@ const rolePermissionMap = {
     "quiz-answers.questions",
     "quiz-answers.quizzes",
     "quiz-answers.quizzes-detail",
+    "quiz-answers.results",
     "log-activity.read",
     "log-activity.create",
   ],
@@ -232,6 +239,7 @@ const rolePermissionMap = {
     "quiz-answers.questions",
     "quiz-answers.quizzes",
     "quiz-answers.quizzes-detail",
+    "quiz-answers.results",
     "log-activity.read",
     "log-activity.create",
   ],

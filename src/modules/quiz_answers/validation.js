@@ -93,6 +93,19 @@ const questionValidation = [
     .withMessage('Format created_by tidak valid')
 ];
 
+const resultsValidation = [
+  body('quizzes_id')
+    .notEmpty()
+    .withMessage('quizzes_id wajib diisi')
+    .isUUID()
+    .withMessage('Format quizzes_id tidak valid'),
+  body('created_by')
+    .notEmpty()
+    .withMessage('created_by wajib diisi')
+    .isUUID()
+    .withMessage('Format created_by tidak valid')
+];
+
 // filter sama seperti POST /quizzes/get, ditambah created_by (wajib) untuk rekap pengerjaan user
 const quizzesValidation = [
   ...quizListValidation,
@@ -142,5 +155,6 @@ module.exports = {
   getByIdValidation,
   questionValidation,
   quizzesValidation,
+  resultsValidation,
   listValidation
 };

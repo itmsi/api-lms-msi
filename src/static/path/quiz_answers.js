@@ -106,4 +106,19 @@ quizAnswersPaths['/quiz-answers/questions'] = {
   }
 };
 
+quizAnswersPaths['/quiz-answers/results'] = {
+  post: {
+    tags: ['Quiz Answers'],
+    summary: 'Get hasil pengerjaan quiz user',
+    description: 'Mengambil hasil pengerjaan quiz milik user created_by: data quiz (title, type, start_date, end_date) & modules.title, rekap quiz_users (total_point, completed_count, uncompleted_count, created_at, updated_at; null jika belum mengerjakan), serta seluruh soal aktif quiz (line, type, question, estimated_time, estimated_time_unit, points, image) beserta jawaban user (answers, points, admin_points, files; answer null jika soal belum dijawab).',
+    requestBody: { required: true, content: json(ref('QuizAnswerResultRequest')) },
+    responses: {
+      ...authErrors,
+      200: { description: 'Success', content: json(envelope(ref('QuizAnswerResult'), 'Success')) },
+      400: errorResponse('Validation error'),
+      404: errorResponse('Quiz tidak ditemukan')
+    }
+  }
+};
+
 module.exports = quizAnswersPaths;

@@ -374,6 +374,61 @@ const findAnswerOfUser = async (questionId, userId) => {
     );
 };
 
+// header hasil quiz: data quiz & module, beserta rekap quiz_users milik user (null jika belum mengerjakan)
+const findResultQuiz = async (quizId, userId) => {
+  return await db("quizzes")
+    .leftJoin("modules", "modules.id", "quizzes.modules_id")
+    .leftJoin(TABLE_NAME, function () {
+      this.on("quiz_users.quizze_id", "quizzes.id")
+        .andOn("quiz_users.created_by", db.raw("?", [userId]))
+        .andOn("quiz_users.is_delete", db.raw("false"));
+    })
+    .where({ "quizzes.id": quizId, "quizzes.is_delete": false })
+    .first(
+      "quizzes.id as quizzes_id",
+      "quizzes.title",
+      "modules.title as module_title",
+      "quizzes.type",
+      db.raw(`to_char(quizzes.start_date, 'YYYY-MM-DD') as start_date`),
+      db.raw(`to_char(quizzes.end_date, 'YYYY-MM-DD') as end_date`),
+      "quiz_users.total_point",
+      "quiz_users.completed_count",
+      "quiz_users.uncompleted_count",
+      "quiz_users.created_at",
+      "quiz_users.updated_at",
+    );
+};
+
+// seluruh soal aktif quiz beserta jawaban user (kolom answer_* null jika soal belum dijawab)
+const findResultQuestions = async (quizId, userId) => {
+  return await db("quiz_questions")
+    .leftJoin(ANSWER_TABLE, function () {
+      this.on("quiz_answers.quiz_question_id", "quiz_questions.id")
+        .andOn("quiz_answers.created_by", db.raw("?", [userId]))
+        .andOn("quiz_answers.is_delete", db.raw("false"));
+    })
+    .where({ "quiz_questions.quizzes_id": quizId, "quiz_questions.is_delete": false })
+    .select(
+      "quiz_questions.id as quiz_question_id",
+      "quiz_questions.line",
+      "quiz_questions.type",
+      "quiz_questions.question",
+      "quiz_questions.estimated_time",
+      "quiz_questions.estimated_time_unit",
+      "quiz_questions.points",
+      db.raw(
+        `CASE WHEN quiz_questions.image IS NOT NULL AND quiz_questions.image <> '' THEN concat_ws('', quiz_questions.image, '/preview'::text) ELSE quiz_questions.image END as image`,
+      ),
+      "quiz_answers.id as quiz_answer_id",
+      "quiz_answers.answers as answer_answers",
+      "quiz_answers.points as answer_points",
+      "quiz_answers.admin_points as answer_admin_points",
+      "quiz_answers.files as answer_files",
+    )
+    .orderBy("quiz_questions.line", "asc")
+    .orderBy("quiz_questions.created_at", "asc");
+};
+
 // daftar soal ringkas milik quiz, dipakai GET /quiz-answers/quizzes/get/:id
 const findQuizQuestions = async (quizId) => {
   return await db('quiz_questions')
@@ -401,4 +456,6 @@ module.exports = {
   findQuizQuestions,
   findQuestionDetail,
   findAnswerOfUser,
+  findResultQuiz,
+  findResultQuestions,
 };

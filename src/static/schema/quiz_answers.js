@@ -104,6 +104,60 @@ const quizAnswersSchemas = {
       total_point: { type: 'string', nullable: true, description: 'quiz_users.total_point', example: '80' }
     }
   },
+  QuizAnswerResultRequest: {
+    type: 'object',
+    required: ['quizzes_id', 'created_by'],
+    properties: {
+      quizzes_id: { type: 'string', format: 'uuid', example: '50f35b4f-7d45-4c9b-b58e-0c7f64e88f5e' },
+      created_by: { type: 'string', format: 'uuid', description: 'id user yang mengerjakan', example: 'f0b57258-5f33-4e03-81f7-cd70d833b5c5' }
+    }
+  },
+  QuizAnswerResult: {
+    type: 'object',
+    description: 'Hasil pengerjaan quiz milik user. Field rekap (quiz_users) null jika user belum mengerjakan.',
+    properties: {
+      quizzes_id: { type: 'string', format: 'uuid', example: '50f35b4f-7d45-4c9b-b58e-0c7f64e88f5e' },
+      title: { type: 'string', description: 'quizzes.title', example: 'Ujian Pemahaman Onboarding Umum' },
+      module_title: { type: 'string', nullable: true, description: 'modules.title', example: 'Pengenalan JavaScript' },
+      type: { type: 'array', items: { type: 'string', enum: ['reguler', 'mt'] }, example: ['reguler'] },
+      start_date: { type: 'string', format: 'date', nullable: true, example: '2026-11-03' },
+      end_date: { type: 'string', format: 'date', nullable: true, example: '2026-12-31' },
+      total_point: { type: 'string', nullable: true, description: 'quiz_users.total_point', example: '15' },
+      completed_count: { type: 'string', nullable: true, description: 'quiz_users.completed_count', example: '2' },
+      uncompleted_count: { type: 'string', nullable: true, description: 'quiz_users.uncompleted_count', example: '1' },
+      created_at: { type: 'string', format: 'date-time', nullable: true, description: 'quiz_users.created_at (mulai mengerjakan)', example: '2026-11-03T08:00:00.000Z' },
+      updated_at: { type: 'string', format: 'date-time', nullable: true, description: 'quiz_users.updated_at (terakhir menjawab)', example: '2026-11-03T08:20:00.000Z' },
+      questions: {
+        type: 'array',
+        description: 'Seluruh soal aktif quiz (urut berdasarkan line)',
+        items: {
+          type: 'object',
+          properties: {
+            quiz_question_id: { type: 'string', format: 'uuid', example: 'd10ec658-1813-4282-9281-16d2633255ba' },
+            line: { type: 'integer', example: 1 },
+            type: { type: 'string', enum: ['multiple_choice', 'multiple_answers', 'true_false', 'short_answer'], example: 'multiple_choice' },
+            question: { type: 'string', example: 'Apa yang dimaksud dengan jalan raya?' },
+            estimated_time: { type: 'integer', nullable: true, example: 1 },
+            estimated_time_unit: { type: 'string', enum: ['minutes', 'seconds'], example: 'minutes' },
+            points: { type: 'integer', description: 'Poin soal', example: 10 },
+            image: { type: 'string', nullable: true, description: 'Link gambar soal (Nextcloud share link + /preview)', example: null },
+            answer: {
+              type: 'object',
+              nullable: true,
+              description: 'Jawaban user untuk soal ini, null jika belum menjawab',
+              properties: {
+                quiz_answer_id: { type: 'string', format: 'uuid', example: '7d6c5b4a-3e2f-4a1b-9c8d-0e1f2a3b4c5d' },
+                answers: { type: 'array', nullable: true, items: { $ref: '#/components/schemas/QuizAnswerItem' } },
+                points: { type: 'integer', description: 'Poin jawaban', example: 10 },
+                admin_points: { type: 'string', nullable: true, description: 'Poin penilaian', example: '10' },
+                files: { type: 'string', nullable: true, description: 'Share link file lampiran dari Nextcloud', example: null }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
   QuizAnswerQuestionRequest: {
     type: 'object',
     required: ['quiz_question_id', 'created_by'],

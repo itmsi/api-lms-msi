@@ -1,16 +1,19 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const controller = require('./controller');
+const controller = require("./controller");
 const {
   createValidation,
   getByIdValidation,
   questionValidation,
   quizzesValidation,
-  listValidation
-} = require('./validation');
-const { validateMiddleware } = require('../../middlewares/validation');
-const { authenticate, authorize } = require('../../middlewares/auth');
-const { handleAnswerFilesUpload } = require('../../middlewares/answerFileUpload');
+  resultsValidation,
+  listValidation,
+} = require("./validation");
+const { validateMiddleware } = require("../../middlewares/validation");
+const { authenticate, authorize } = require("../../middlewares/auth");
+const {
+  handleAnswerFilesUpload,
+} = require("../../middlewares/answerFileUpload");
 
 router.use(authenticate);
 
@@ -21,11 +24,11 @@ router.use(authenticate);
  * @access  Protected (hak akses quiz-answers.*)
  */
 router.post(
-  '/get',
+  "/get",
   authorize,
   listValidation,
   validateMiddleware,
-  controller.getAll
+  controller.getAll,
 );
 
 /**
@@ -35,11 +38,11 @@ router.post(
  * @access  Protected (hak akses quiz-answers.quizzes)
  */
 router.post(
-  '/quizzes/get',
+  "/quizzes/get",
   authorize,
   quizzesValidation,
   validateMiddleware,
-  controller.getQuizzes
+  controller.getQuizzes,
 );
 
 /**
@@ -49,11 +52,11 @@ router.post(
  * @access  Protected (hak akses quiz-answers.quizzes-detail)
  */
 router.get(
-  '/quizzes/get/:id',
+  "/quizzes/get/:id",
   authorize,
   getByIdValidation,
   validateMiddleware,
-  controller.getQuizById
+  controller.getQuizById,
 );
 
 /**
@@ -62,11 +65,11 @@ router.get(
  * @access  Protected (hak akses quiz-answers.questions)
  */
 router.post(
-  '/questions',
+  "/questions",
   authorize,
   questionValidation,
   validateMiddleware,
-  controller.getQuestion
+  controller.getQuestion,
 );
 
 /**
@@ -75,11 +78,11 @@ router.post(
  * @access  Protected (hak akses quiz-answers.*)
  */
 router.get(
-  '/:id',
+  "/:id",
   authorize,
   getByIdValidation,
   validateMiddleware,
-  controller.getById
+  controller.getById,
 );
 
 /**
@@ -89,12 +92,12 @@ router.get(
  * @access  Protected (hak akses quiz-answers.*)
  */
 router.post(
-  '/create',
+  "/create",
   authorize,
   handleAnswerFilesUpload,
   createValidation,
   validateMiddleware,
-  controller.create
+  controller.create,
 );
 
 /**
@@ -103,11 +106,11 @@ router.post(
  * @access  Protected (hak akses quiz-answers.*)
  */
 router.delete(
-  '/:id',
+  "/:id",
   authorize,
   getByIdValidation,
   validateMiddleware,
-  controller.remove
+  controller.remove,
 );
 
 /**
@@ -116,11 +119,25 @@ router.delete(
  * @access  Protected (hak akses quiz-answers.*)
  */
 router.post(
-  '/:id/restore',
+  "/:id/restore",
   authorize,
   getByIdValidation,
   validateMiddleware,
-  controller.restore
+  controller.restore,
+);
+
+/**
+ * @route   POST /api/lms/quiz-answers/results
+ * @desc    Hasil pengerjaan quiz milik user (body: quizzes_id, created_by): data quiz & module,
+ *          rekap quiz_users, dan seluruh soal quiz beserta jawaban user
+ * @access  Protected (hak akses quiz-answers.results)
+ */
+router.post(
+  "/results",
+  authorize,
+  resultsValidation,
+  validateMiddleware,
+  controller.getResults,
 );
 
 module.exports = router;
