@@ -451,10 +451,24 @@ const findResultQuestions = async (quizId, userId) => {
 };
 
 // daftar soal ringkas milik quiz, dipakai GET /quiz-answers/quizzes/get/:id
-const findQuizQuestions = async (quizId) => {
+// is_answer = true jika user sudah punya data jawaban aktif untuk soal tsb
+const findQuizQuestions = async (quizId, userId) => {
   return await db('quiz_questions')
     .where({ quizzes_id: quizId, is_delete: false })
-    .select('id', 'line', 'question')
+    .select(
+      'id',
+      'line',
+      'question',
+      db.raw(
+        `EXISTS (
+          SELECT 1 FROM quiz_answers
+          WHERE quiz_answers.quiz_question_id = quiz_questions.id
+            AND quiz_answers.created_by = ?
+            AND quiz_answers.is_delete = false
+        ) as is_answer`,
+        [userId],
+      ),
+    )
     .orderBy('line', 'asc')
     .orderBy('created_at', 'asc');
 };

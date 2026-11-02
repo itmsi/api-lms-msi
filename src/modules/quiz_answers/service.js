@@ -63,10 +63,10 @@ const previewQuestion = (html) => {
   return text.length > QUESTION_PREVIEW_LENGTH ? `${text.slice(0, QUESTION_PREVIEW_LENGTH)}...` : text;
 };
 
-// detail quiz (sama seperti GET /quizzes/:id) beserta soal ringkas: id, line, question (dipotong)
-const getQuizById = async (id) => {
+// detail quiz (sama seperti GET /quizzes/:id) beserta soal ringkas: id, line, question (dipotong), is_answer
+const getQuizById = async (id, userId) => {
   const data = await quizService.getItemById(id);
-  const questions = await repository.findQuizQuestions(id);
+  const questions = await repository.findQuizQuestions(id, userId);
 
   return {
     ...data,

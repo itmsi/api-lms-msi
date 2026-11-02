@@ -30,7 +30,7 @@ const getQuizzes = async (req, res) => {
 const getQuizById = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await service.getQuizById(id);
+    const data = await service.getQuizById(id, req.user.id);
     return successResponse(res, data);
   } catch (error) {
     return handleError(res, error);

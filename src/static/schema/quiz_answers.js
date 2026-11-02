@@ -71,6 +71,11 @@ const quizAnswersSchemas = {
               type: 'string',
               description: 'Potongan teks soal (tag HTML dibuang), maksimal 25 karakter lalu diakhiri "..." jika lebih panjang',
               example: 'Anda menerima email yang ...'
+            },
+            is_answer: {
+              type: 'boolean',
+              description: 'true jika user yang login sudah punya data jawaban (quiz_answers) untuk soal ini, false jika belum',
+              example: true
             }
           }
         }
