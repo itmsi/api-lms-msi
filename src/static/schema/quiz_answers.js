@@ -101,7 +101,9 @@ const quizAnswersSchemas = {
       banner: { type: 'string', nullable: true, description: 'Share link banner dari Nextcloud (preview)', example: 'https://cloud.inlinegroupdc.com/s/gfpcTJFcA5gH3DC/preview' },
       completed_count: { type: 'string', nullable: true, description: 'quiz_users.completed_count', example: '8' },
       uncompleted_count: { type: 'string', nullable: true, description: 'quiz_users.uncompleted_count', example: '2' },
-      total_point: { type: 'string', nullable: true, description: 'quiz_users.total_point', example: '80' }
+      total_point: { type: 'string', nullable: true, description: 'quiz_users.total_point', example: '80' },
+      total_correct_points: { type: 'string', nullable: true, description: 'quiz_users.total_correct_points: jumlah quiz_answers.points milik user', example: '80' },
+      total_possible_points: { type: 'string', nullable: true, description: 'quiz_users.total_possible_points: jumlah quiz_questions.points dari soal aktif quiz', example: '100' }
     }
   },
   QuizAnswerResultRequest: {

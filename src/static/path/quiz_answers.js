@@ -58,7 +58,7 @@ quizAnswersPaths['/quiz-answers/quizzes/get'] = {
   post: {
     tags: ['Quiz Answers'],
     summary: 'Get all quizzes beserta rekap pengerjaan user',
-    description: 'Proses sama seperti POST /quizzes/get (pagination, sorting, search judul, filter modules_id & type), ditambah completed_count, uncompleted_count, total_point dari quiz_users milik created_by. Nilai rekap null jika user belum pernah menjawab quiz tersebut. Hanya menampilkan quiz yang sudah dimulai (start_date <= tanggal hari ini).',
+    description: 'Proses sama seperti POST /quizzes/get (pagination, sorting, search judul, filter modules_id & type), ditambah completed_count, uncompleted_count, total_point, total_correct_points, total_possible_points dari quiz_users milik created_by. Nilai rekap null jika user belum pernah menjawab quiz tersebut. Hanya menampilkan quiz yang sudah dimulai (start_date <= tanggal hari ini).',
     requestBody: { required: true, content: json(quizzesRequest) },
     responses: {
       ...authErrors,

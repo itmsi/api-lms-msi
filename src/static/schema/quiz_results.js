@@ -14,7 +14,9 @@ const quizResultProps = {
   send_date: { type: 'string', format: 'date-time', description: 'quiz_users.updated_at, jika kosong quiz_users.created_at', example: '2026-11-03T08:20:00.000Z' },
   updated_at: { type: 'string', format: 'date-time', nullable: true, description: 'quiz_users.updated_at', example: '2026-11-03T08:20:00.000Z' },
   total_point: { type: 'string', nullable: true, description: 'quiz_users.total_point', example: '80' },
-  max_points: { type: 'string', nullable: true, description: 'quizzes.max_points: jumlah poin seluruh soal aktif quiz, dihitung ulang otomatis saat soal berubah', example: '100' }
+  max_points: { type: 'string', nullable: true, description: 'quizzes.max_points: jumlah poin seluruh soal aktif quiz, dihitung ulang otomatis saat soal berubah', example: '100' },
+  total_correct_points: { type: 'string', nullable: true, description: 'quiz_users.total_correct_points: jumlah quiz_answers.points milik user', example: '80' },
+  total_possible_points: { type: 'string', nullable: true, description: 'quiz_users.total_possible_points: jumlah quiz_questions.points dari soal aktif quiz', example: '100' }
 };
 
 const answerItemExample = [{ line: 2, text: 'Laporkan ke tim IT', is_correct: true }];

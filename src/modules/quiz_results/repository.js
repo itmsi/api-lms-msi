@@ -40,6 +40,8 @@ const COLUMNS = [
   "quiz_users.updated_at",
   "quiz_users.total_point",
   "quizzes.max_points",
+  "quiz_users.total_correct_points",
+  "quiz_users.total_possible_points",
 ];
 
 const baseQuery = () =>

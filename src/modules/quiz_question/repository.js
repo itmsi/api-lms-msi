@@ -88,8 +88,10 @@ const nextLine = async (quizzesId) => {
 };
 
 /**
- * Hitung ulang quizzes.max_points dari poin soal aktif, dalam transaksi yang sama dengan perubahan soal.
+ * Hitung ulang quizzes.max_points dan quiz_users.total_possible_points dari poin soal aktif,
+ * dalam transaksi yang sama dengan perubahan soal.
  * Baris quiz dikunci dulu agar perubahan soal yang berjalan bersamaan dihitung bergantian dan tidak saling menimpa.
+ * updated_at quiz_users tidak diubah karena dipakai sebagai send_date (waktu peserta mengirim jawaban).
  */
 const recalcMaxPoints = async (quizId, trx) => {
   await trx('quizzes').where({ id: quizId }).forNoKeyUpdate().first('id');
@@ -100,6 +102,7 @@ const recalcMaxPoints = async (quizId, trx) => {
     .first();
 
   await trx('quizzes').where({ id: quizId }).update({ max_points: String(total || 0) });
+  await trx('quiz_users').where({ quizze_id: quizId }).update({ total_possible_points: String(total || 0) });
 };
 
 const create = async (data, actorId = null) => {

@@ -53,6 +53,8 @@ const isAnswerCorrect = (options, answers) => {
  * - total_point       : jumlah admin_points
  * - completed_count   : jumlah jawaban dengan answers tidak kosong
  * - uncompleted_count : jumlah jawaban dengan answers kosong ([])
+ * - total_correct_points  : jumlah quiz_answers.points
+ * - total_possible_points : jumlah quiz_questions.points dari seluruh soal aktif quiz
  * quiz_users dibuat bila belum ada (dan user punya jawaban); jika sudah ada hanya di-update bila nilainya berubah.
  */
 const recalcQuizUser = async (quizId, createdBy, conn = db) => {
@@ -64,18 +66,25 @@ const recalcQuizUser = async (quizId, createdBy, conn = db) => {
       'qa.created_by': createdBy,
       'qa.is_delete': false
     })
-    .select('qa.answers', 'qa.admin_points');
+    .select('qa.answers', 'qa.admin_points', 'qa.points');
+
+  const { total: possiblePoints } = await conn('quiz_questions')
+    .where({ quizzes_id: quizId, is_delete: false })
+    .sum('points as total')
+    .first();
 
   const completed = answers.filter((a) => hasAnswer(a.answers)).length;
   const summary = {
     total_point: String(answers.reduce((sum, a) => sum + toNumber(a.admin_points), 0)),
     completed_count: String(completed),
-    uncompleted_count: String(answers.length - completed)
+    uncompleted_count: String(answers.length - completed),
+    total_correct_points: String(answers.reduce((sum, a) => sum + toNumber(a.points), 0)),
+    total_possible_points: String(possiblePoints || 0)
   };
 
   const existing = await conn('quiz_users')
     .where({ quizze_id: quizId, created_by: createdBy, is_delete: false })
-    .first('id', 'total_point', 'completed_count', 'uncompleted_count');
+    .first('id', ...Object.keys(summary));
 
   if (existing) {
     const changes = Object.fromEntries(

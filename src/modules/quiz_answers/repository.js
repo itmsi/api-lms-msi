@@ -125,7 +125,9 @@ const QUIZ_COLUMNS = [
   db.raw(`CASE WHEN quizzes.banner IS NOT NULL AND quizzes.banner <> '' THEN concat_ws('', quizzes.banner, '/preview'::text) ELSE quizzes.banner END as banner`),
   'quiz_users.completed_count',
   'quiz_users.uncompleted_count',
-  'quiz_users.total_point'
+  'quiz_users.total_point',
+  'quiz_users.total_correct_points',
+  'quiz_users.total_possible_points'
 ];
 
 /**
