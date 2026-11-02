@@ -102,7 +102,7 @@ const recalcQuizUser = async (quizId, createdBy, conn = db) => {
 /**
  * Nilai satu jawaban (quiz_question_id + created_by), lalu hitung ulang rekap quiz_users user tsb.
  * 1. ambil type, options, points soal
- * 2. selain short_answer: jika benar points & admin_points = points soal, jika salah 0
+ * 2. selain short_answer: is_correct = hasil penilaian; jika benar points & admin_points = points soal, jika salah 0
  * 3. rekap quiz_users dihitung ulang (quiz diambil dari quiz_questions.quizzes_id)
  */
 const gradeAnswer = async (quizQuestionId, createdBy, conn = db) => {
@@ -113,15 +113,20 @@ const gradeAnswer = async (quizQuestionId, createdBy, conn = db) => {
 
   const answer = await conn('quiz_answers')
     .where({ quiz_question_id: quizQuestionId, created_by: createdBy, is_delete: false })
-    .first('id', 'answers', 'points', 'admin_points');
+    .first('id', 'answers', 'points', 'admin_points', 'is_correct');
 
   if (answer && !SKIPPED_TYPES.includes(question.type)) {
-    const points = isAnswerCorrect(question.options, answer.answers) ? question.points : 0;
+    const isCorrect = isAnswerCorrect(question.options, answer.answers);
+    const points = isCorrect ? question.points : 0;
 
-    if (answer.points !== points || answer.admin_points !== String(points)) {
+    if (
+      answer.is_correct !== isCorrect
+      || answer.points !== points
+      || answer.admin_points !== String(points)
+    ) {
       await conn('quiz_answers')
         .where({ id: answer.id })
-        .update({ points, admin_points: String(points) });
+        .update({ is_correct: isCorrect, points, admin_points: String(points) });
     }
   }
 
