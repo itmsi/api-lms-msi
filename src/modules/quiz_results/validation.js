@@ -8,6 +8,30 @@ const idParam = param('id')
 
 const getByIdValidation = [idParam];
 
+// batas kolom integer PostgreSQL
+const MAX_ADMIN_POINTS = 2147483647;
+
+// null / '' berarti nilai dikosongkan; selain itu harus angka bulat >= 0 (string atau number)
+const assertAdminPoints = (value) => {
+  if (value === null || value === '') return true;
+
+  const isIntegerLike = ['string', 'number'].includes(typeof value) && /^\d+$/.test(String(value));
+  if (!isIntegerLike || Number(value) > MAX_ADMIN_POINTS) {
+    throw new Error('admin_points harus berupa angka bulat >= 0 atau null');
+  }
+
+  return true;
+};
+
+const updateAdminPointsValidation = [
+  idParam,
+  body('admin_points')
+    .exists()
+    .withMessage('admin_points wajib dikirim (kirim null untuk mengosongkan nilai)')
+    .bail()
+    .custom(assertAdminPoints)
+];
+
 const listValidation = [
   body('page')
     .optional()
@@ -44,5 +68,6 @@ const listValidation = [
 
 module.exports = {
   getByIdValidation,
+  updateAdminPointsValidation,
   listValidation
 };

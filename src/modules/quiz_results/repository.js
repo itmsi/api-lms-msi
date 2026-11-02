@@ -1,5 +1,6 @@
 const { pgCore: db } = require("../../config/database");
 const { normalizeListParams } = require("../../utils/list_params");
+const { recalcQuizUser } = require("../quiz_answers/grading");
 
 const TABLE_NAME = "quiz_users";
 const EMPLOYEE_TABLE = "gate_sso_employees";
@@ -122,8 +123,39 @@ const findQuestionAnswers = async (quizId, userId) => {
     .orderBy("quiz_questions.created_at", "asc");
 };
 
+// simpan nilai dari admin, lalu hitung ulang rekap quiz_users (total_point) milik user yang menjawab
+const updateAdminPoints = async (answerId, data, actorId = null) => {
+  return await db.transaction(async (trx) => {
+    const [answer] = await trx("quiz_answers")
+      .where({ id: answerId, is_delete: false })
+      .update({ ...data, updated_by: actorId, updated_at: trx.fn.now() })
+      .returning([
+        "id as quiz_answer_id",
+        "quiz_question_id",
+        "created_by",
+        "admin_points",
+        "is_correct",
+        "updated_at",
+        "updated_by",
+      ]);
+
+    if (!answer) return null;
+
+    const question = await trx("quiz_questions")
+      .where({ id: answer.quiz_question_id })
+      .first("quizzes_id");
+    if (question) {
+      await recalcQuizUser(question.quizzes_id, answer.created_by, trx);
+    }
+
+    const { quiz_question_id: questionId, created_by: userId, ...result } = answer;
+    return result;
+  });
+};
+
 module.exports = {
   findAll,
   findById,
   findQuestionAnswers,
+  updateAdminPoints,
 };

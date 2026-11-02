@@ -28,7 +28,18 @@ const getById = async (req, res) => {
   }
 };
 
+const updateAdminPoints = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await service.updateAdminPoints(id, req.body.admin_points, req.user.id);
+    return successResponse(res, data, 'Data berhasil diupdate');
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 module.exports = {
   getAll,
-  getById
+  getById,
+  updateAdminPoints
 };

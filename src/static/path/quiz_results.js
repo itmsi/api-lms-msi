@@ -44,6 +44,19 @@ const quizResultsPaths = {
         400: errorResponse('Validation error'),
         404: errorResponse('Not found')
       }
+    },
+    put: {
+      tags: ['Quiz Results'],
+      summary: 'Update nilai jawaban oleh admin',
+      description: 'id pada endpoint ini adalah quiz_answers.id (berbeda dengan GET yang memakai quiz_users.id). admin_points terisi (termasuk "0"): is_correct = true. admin_points null atau kosong: is_correct = false dan admin_points disimpan sebagai 0. updated_at & updated_by diisi otomatis, lalu total_point pada quiz_users dihitung ulang.',
+      parameters: [idParam('quiz answer')],
+      requestBody: { required: true, content: json(ref('QuizResultAdminPointsInput')) },
+      responses: {
+        ...authErrors,
+        200: { description: 'Updated successfully', content: json(envelope(ref('QuizResultAdminPointsResult'), 'Data berhasil diupdate')) },
+        400: errorResponse('Validation error'),
+        404: errorResponse('Not found')
+      }
     }
   }
 };

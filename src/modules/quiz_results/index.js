@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("./controller");
-const { getByIdValidation, listValidation } = require("./validation");
+const {
+  getByIdValidation,
+  updateAdminPointsValidation,
+  listValidation,
+} = require("./validation");
 const { validateMiddleware } = require("../../middlewares/validation");
 const { authenticate, authorize } = require("../../middlewares/auth");
 
@@ -32,6 +36,20 @@ router.get(
   getByIdValidation,
   validateMiddleware,
   controller.getById,
+);
+
+/**
+ * @route   PUT /api/lms/quiz_results/:id
+ * @desc    Update nilai jawaban oleh admin (id = quiz_answers.id): admin_points & is_correct,
+ *          lalu rekap quiz_users dihitung ulang
+ * @access  Protected (hak akses quiz-results.update)
+ */
+router.put(
+  "/:id",
+  authorize,
+  updateAdminPointsValidation,
+  validateMiddleware,
+  controller.updateAdminPoints,
 );
 
 module.exports = router;
