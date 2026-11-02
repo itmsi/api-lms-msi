@@ -1,7 +1,7 @@
 /**
  * Swagger API Path Definitions for Quiz Results Module
  */
-const { listRequest, json, envelope, errorResponse, ref, authErrors } = require('./_crud');
+const { listRequest, json, envelope, errorResponse, idParam, ref, authErrors } = require('./_crud');
 
 const quizResultsPaths = {
   '/quiz_results/get': {
@@ -29,6 +29,20 @@ const quizResultsPaths = {
           }, 'Success'))
         },
         400: errorResponse('Validation error')
+      }
+    }
+  },
+  '/quiz_results/{id}': {
+    get: {
+      tags: ['Quiz Results'],
+      summary: 'Get quiz result by ID',
+      description: 'Detail hasil pengerjaan quiz (id = quiz_users.id) beserta question_answers: seluruh soal aktif quiz (urut berdasarkan line) dan jawaban user. Kolom jawaban bernilai null dan user_point 0 jika soal belum dijawab. question_answer berisi kunci jawaban (opsi is_correct = true).',
+      parameters: [idParam('quiz result')],
+      responses: {
+        ...authErrors,
+        200: { description: 'Success', content: json(envelope(ref('QuizResultDetail'), 'Success')) },
+        400: errorResponse('Validation error'),
+        404: errorResponse('Not found')
       }
     }
   }

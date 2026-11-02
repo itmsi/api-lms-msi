@@ -41,6 +41,11 @@ const COLUMNS = [
   "quizzes.max_points",
 ];
 
+const baseQuery = () =>
+  db(TABLE_NAME)
+    .leftJoin("quizzes", "quizzes.id", "quiz_users.quizze_id")
+    .leftJoin("modules", "modules.id", "quizzes.modules_id");
+
 const findAll = async (params = {}) => {
   const { page, limit, sortColumn, sortOrder, search } = normalizeListParams(
     params,
@@ -53,10 +58,7 @@ const findAll = async (params = {}) => {
   const offset = (page - 1) * limit;
 
   const base = () => {
-    const q = db(TABLE_NAME)
-      .leftJoin("quizzes", "quizzes.id", "quiz_users.quizze_id")
-      .leftJoin("modules", "modules.id", "quizzes.modules_id")
-      .where("quiz_users.is_delete", false);
+    const q = baseQuery().where("quiz_users.is_delete", false);
     if (params.quizzes_id) q.andWhere("quiz_users.quizze_id", params.quizzes_id);
     if (params.status) q.andWhereRaw(`${STATUS_SQL} = ?`, [params.status]);
     if (search) {
@@ -88,6 +90,40 @@ const findAll = async (params = {}) => {
   };
 };
 
+// quizze_id & created_by hanya dipakai service untuk mengambil soal dan jawaban user
+const findById = async (id) => {
+  return await baseQuery()
+    .where({ "quiz_users.id": id, "quiz_users.is_delete": false })
+    .first([...COLUMNS, "quiz_users.quizze_id", "quiz_users.created_by"]);
+};
+
+// seluruh soal aktif quiz beserta jawaban user (kolom jawaban null / 0 jika soal belum dijawab)
+const findQuestionAnswers = async (quizId, userId) => {
+  return await db("quiz_questions")
+    .leftJoin("quiz_answers", function () {
+      this.on("quiz_answers.quiz_question_id", "quiz_questions.id")
+        .andOn("quiz_answers.created_by", db.raw("?", [userId]))
+        .andOn("quiz_answers.is_delete", db.raw("false"));
+    })
+    .where({ "quiz_questions.quizzes_id": quizId, "quiz_questions.is_delete": false })
+    .select(
+      "quiz_questions.id as quiz_question_id",
+      "quiz_questions.line",
+      "quiz_questions.type",
+      "quiz_questions.question",
+      "quiz_questions.points as question_point",
+      "quiz_questions.options as question_answer",
+      "quiz_answers.id as quiz_answer_id",
+      "quiz_answers.answers as user_answer",
+      "quiz_answers.files as user_answer_file",
+      db.raw("COALESCE(quiz_answers.points, 0) as user_point"),
+    )
+    .orderBy("quiz_questions.line", "asc")
+    .orderBy("quiz_questions.created_at", "asc");
+};
+
 module.exports = {
   findAll,
+  findById,
+  findQuestionAnswers,
 };

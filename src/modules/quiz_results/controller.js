@@ -18,6 +18,17 @@ const getAll = async (req, res) => {
   }
 };
 
+const getById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await service.getItemById(id);
+    return successResponse(res, data);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 module.exports = {
-  getAll
+  getAll,
+  getById
 };

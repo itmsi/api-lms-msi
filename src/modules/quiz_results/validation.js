@@ -1,4 +1,12 @@
-const { body } = require('express-validator');
+const { body, param } = require('express-validator');
+
+const idParam = param('id')
+  .notEmpty()
+  .withMessage('ID wajib diisi')
+  .isUUID()
+  .withMessage('Format ID tidak valid');
+
+const getByIdValidation = [idParam];
 
 const listValidation = [
   body('page')
@@ -35,5 +43,6 @@ const listValidation = [
 ];
 
 module.exports = {
+  getByIdValidation,
   listValidation
 };

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("./controller");
-const { listValidation } = require("./validation");
+const { getByIdValidation, listValidation } = require("./validation");
 const { validateMiddleware } = require("../../middlewares/validation");
 const { authenticate, authorize } = require("../../middlewares/auth");
 
@@ -19,6 +19,19 @@ router.post(
   listValidation,
   validateMiddleware,
   controller.getAll,
+);
+
+/**
+ * @route   GET /api/lms/quiz_results/:id
+ * @desc    Get hasil pengerjaan quiz by ID (quiz_users.id) beserta seluruh soal dan jawaban user
+ * @access  Protected (hak akses quiz-results.detail)
+ */
+router.get(
+  "/:id",
+  authorize,
+  getByIdValidation,
+  validateMiddleware,
+  controller.getById,
 );
 
 module.exports = router;
