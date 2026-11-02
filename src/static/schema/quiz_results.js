@@ -21,20 +21,36 @@ const answerItemExample = [{ line: 2, text: 'Laporkan ke tim IT', is_correct: tr
 
 const quizResultsSchemas = {
   QuizResultAdminPointsInput: {
-    type: 'object',
-    required: ['admin_points'],
-    properties: {
-      admin_points: { type: 'string', nullable: true, description: 'Nilai dari admin, angka bulat >= 0. null atau kosong untuk mengosongkan nilai', example: '10' }
+    type: 'array',
+    minItems: 1,
+    description: 'Daftar jawaban yang dinilai, quiz_answer_id tidak boleh duplikat',
+    items: {
+      type: 'object',
+      required: ['quiz_answer_id', 'admin_points'],
+      properties: {
+        quiz_answer_id: { type: 'string', format: 'uuid', description: 'quiz_answers.id', example: '7d6c5b4a-3e2f-4a1b-9c8d-0e1f2a3b4c5d' },
+        admin_points: { type: 'string', nullable: true, description: 'Nilai dari admin, angka bulat dari 0 sampai poin soal (quiz_questions.points). null atau kosong untuk mengosongkan nilai', example: '10' }
+      }
     }
   },
   QuizResultAdminPointsResult: {
     type: 'object',
     properties: {
-      quiz_answer_id: { type: 'string', format: 'uuid', description: 'quiz_answers.id', example: '7d6c5b4a-3e2f-4a1b-9c8d-0e1f2a3b4c5d' },
-      admin_points: { type: 'integer', description: 'quiz_answers.admin_points, 0 jika nilai dikosongkan', example: 10 },
-      is_correct: { type: 'boolean', description: 'true jika admin_points terisi, false jika dikosongkan', example: true },
-      updated_at: { type: 'string', format: 'date-time', example: '2026-11-03T08:20:00.000Z' },
-      updated_by: { type: 'string', format: 'uuid', nullable: true, description: 'id admin yang menilai', example: 'f0b57258-5f33-4e03-81f7-cd70d833b5c5' }
+      quiz_result_id: { type: 'string', format: 'uuid', description: 'quiz_users.id', example: '3c2b1a09-8f7e-4d6c-9b5a-4e3d2c1b0a99' },
+      total_point: { type: 'string', description: 'quiz_users.total_point setelah dihitung ulang', example: '15' },
+      answers: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            quiz_answer_id: { type: 'string', format: 'uuid', description: 'quiz_answers.id', example: '7d6c5b4a-3e2f-4a1b-9c8d-0e1f2a3b4c5d' },
+            admin_points: { type: 'integer', description: 'quiz_answers.admin_points, 0 jika nilai dikosongkan', example: 10 },
+            is_correct: { type: 'boolean', description: 'true jika admin_points terisi, false jika dikosongkan', example: true },
+            updated_at: { type: 'string', format: 'date-time', example: '2026-11-03T08:20:00.000Z' },
+            updated_by: { type: 'string', format: 'uuid', nullable: true, description: 'id admin yang menilai', example: 'f0b57258-5f33-4e03-81f7-cd70d833b5c5' }
+          }
+        }
+      }
     }
   },
   QuizResult: {

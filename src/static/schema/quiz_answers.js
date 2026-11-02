@@ -179,7 +179,7 @@ const quizAnswersSchemas = {
       points: { type: 'integer', description: 'Poin soal', example: 2 },
       options: {
         type: 'array',
-        description: 'Opsi jawaban tanpa kunci jawaban (is_correct tidak dikirim)',
+        description: 'Opsi jawaban tanpa kunci jawaban (is_correct tidak dikirim). Untuk type short_answer, text selalu kosong karena berisi jawaban',
         items: {
           type: 'object',
           properties: {

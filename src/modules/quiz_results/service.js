@@ -30,13 +30,18 @@ const getItemById = async (id) => {
 
 // admin_points terisi: is_correct = true; kosong (null / ''): is_correct = false.
 // Kolom admin_points NOT NULL, sehingga nilai kosong disimpan sebagai 0 (sama seperti jawaban yang belum dinilai).
-const updateAdminPoints = async (answerId, adminPoints, actorId) => {
-  const isFilled = adminPoints !== null && adminPoints !== '';
+const updateAdminPoints = async (quizUserId, items, actorId) => {
+  const answers = items.map(({ quiz_answer_id: id, admin_points: adminPoints }) => {
+    const isFilled = adminPoints !== null && adminPoints !== '';
 
-  const data = await repository.updateAdminPoints(answerId, {
-    admin_points: isFilled ? Number(adminPoints) : 0,
-    is_correct: isFilled
-  }, actorId);
+    return {
+      id,
+      admin_points: isFilled ? Number(adminPoints) : 0,
+      is_correct: isFilled
+    };
+  });
+
+  const data = await repository.updateAdminPoints(quizUserId, answers, actorId);
 
   if (!data) {
     throw { message: 'Data tidak ditemukan', statusCode: 404 };

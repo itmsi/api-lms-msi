@@ -123,33 +123,69 @@ const findQuestionAnswers = async (quizId, userId) => {
     .orderBy("quiz_questions.created_at", "asc");
 };
 
-// simpan nilai dari admin, lalu hitung ulang rekap quiz_users (total_point) milik user yang menjawab
-const updateAdminPoints = async (answerId, data, actorId = null) => {
+/**
+ * Simpan nilai dari admin untuk beberapa jawaban dalam satu transaksi, lalu hitung ulang rekap quiz_users.
+ * Semua jawaban harus milik hasil quiz ini (user & quiz yang sama); jika ada satu saja yang tidak, semuanya dibatalkan.
+ */
+const updateAdminPoints = async (quizUserId, items, actorId = null) => {
   return await db.transaction(async (trx) => {
-    const [answer] = await trx("quiz_answers")
-      .where({ id: answerId, is_delete: false })
-      .update({ ...data, updated_by: actorId, updated_at: trx.fn.now() })
-      .returning([
-        "id as quiz_answer_id",
-        "quiz_question_id",
-        "created_by",
-        "admin_points",
-        "is_correct",
-        "updated_at",
-        "updated_by",
-      ]);
+    const quizUser = await trx(TABLE_NAME)
+      .where({ id: quizUserId, is_delete: false })
+      .first("quizze_id", "created_by");
+    if (!quizUser) return null;
 
-    if (!answer) return null;
-
-    const question = await trx("quiz_questions")
-      .where({ id: answer.quiz_question_id })
-      .first("quizzes_id");
-    if (question) {
-      await recalcQuizUser(question.quizzes_id, answer.created_by, trx);
+    const answerIds = items.map((item) => item.id);
+    const owned = await trx("quiz_answers")
+      .join("quiz_questions", "quiz_questions.id", "quiz_answers.quiz_question_id")
+      .where({
+        "quiz_questions.quizzes_id": quizUser.quizze_id,
+        "quiz_questions.is_delete": false,
+        "quiz_answers.created_by": quizUser.created_by,
+        "quiz_answers.is_delete": false,
+      })
+      .whereIn("quiz_answers.id", answerIds)
+      .select("quiz_answers.id", "quiz_questions.points");
+    if (owned.length !== answerIds.length) {
+      throw {
+        message: "Ada quiz_answer_id yang tidak ditemukan pada hasil quiz ini",
+        statusCode: 400,
+      };
     }
 
-    const { quiz_question_id: questionId, created_by: userId, ...result } = answer;
-    return result;
+    // nilai dari admin tidak boleh melebihi poin soal
+    const maxPoints = new Map(owned.map((row) => [row.id, row.points]));
+    for (const { id, admin_points: adminPoints } of items) {
+      const max = maxPoints.get(id.toLowerCase());
+      if (adminPoints > max) {
+        throw {
+          message: `admin_points untuk quiz_answer_id ${id} tidak boleh melebihi poin soal (${max})`,
+          statusCode: 400,
+        };
+      }
+    }
+
+    const answers = [];
+    for (const { id, ...data } of items) {
+      const [answer] = await trx("quiz_answers")
+        .where({ id })
+        .update({ ...data, updated_by: actorId, updated_at: trx.fn.now() })
+        .returning([
+          "id as quiz_answer_id",
+          "admin_points",
+          "is_correct",
+          "updated_at",
+          "updated_by",
+        ]);
+      answers.push(answer);
+    }
+
+    const { total_point: totalPoint } = await recalcQuizUser(
+      quizUser.quizze_id,
+      quizUser.created_by,
+      trx,
+    );
+
+    return { quiz_result_id: quizUserId, total_point: totalPoint, answers };
   });
 };
 

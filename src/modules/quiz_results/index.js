@@ -40,7 +40,7 @@ router.get(
 
 /**
  * @route   PUT /api/lms/quiz_results/:id
- * @desc    Update nilai jawaban oleh admin (id = quiz_answers.id): admin_points & is_correct,
+ * @desc    Update nilai beberapa jawaban oleh admin (id = quiz_users.id, body: array quiz_answer_id & admin_points),
  *          lalu rekap quiz_users dihitung ulang
  * @access  Protected (hak akses quiz-results.update)
  */

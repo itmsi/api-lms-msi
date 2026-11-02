@@ -113,8 +113,10 @@ const getQuestionWithAnswer = async ({ quiz_question_id: questionId, created_by:
 
   const answer = await repository.findAnswerOfUser(questionId, userId);
 
-  // kunci jawaban (is_correct) tidak dikirim ke klien
-  const options = (question.options || []).map(({ is_correct, ...option }) => option);
+  // kunci jawaban (is_correct) tidak dikirim ke klien; options short_answer berisi jawaban, jadi text dikosongkan
+  const options = (question.options || []).map(({ is_correct, ...option }) => (
+    question.type === 'short_answer' ? { ...option, text: '' } : option
+  ));
 
   return { ...question, options, answer: answer || null };
 };

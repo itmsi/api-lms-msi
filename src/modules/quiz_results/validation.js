@@ -23,9 +23,30 @@ const assertAdminPoints = (value) => {
   return true;
 };
 
+// body berupa array berisi minimal 1 jawaban, dan satu jawaban hanya boleh muncul sekali
+const assertAnswerItems = (items) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new Error('Body harus berupa array berisi minimal 1 jawaban');
+  }
+
+  const ids = items.map((item) => String(item?.quiz_answer_id).toLowerCase());
+  if (new Set(ids).size !== ids.length) {
+    throw new Error('quiz_answer_id tidak boleh duplikat');
+  }
+
+  return true;
+};
+
 const updateAdminPointsValidation = [
   idParam,
-  body('admin_points')
+  body()
+    .custom(assertAnswerItems),
+  body('*.quiz_answer_id')
+    .notEmpty()
+    .withMessage('quiz_answer_id wajib diisi')
+    .isUUID()
+    .withMessage('Format quiz_answer_id tidak valid'),
+  body('*.admin_points')
     .exists()
     .withMessage('admin_points wajib dikirim (kirim null untuk mengosongkan nilai)')
     .bail()
