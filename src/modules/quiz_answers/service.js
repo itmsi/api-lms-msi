@@ -10,8 +10,9 @@ const {
 } = require('../../utils/nextcloud');
 
 // 'files' sengaja tidak masuk FIELDS: hanya boleh diisi lewat upload file atau dikosongkan lewat file_delete.
+// 'points' juga tidak masuk FIELDS: hanya boleh diisi sistem lewat penilaian (lihat grading.js).
 // Kolom quiz_users (quizze_id, total_point, completed_count, uncompleted_count) dihitung di backend.
-const FIELDS = ['answers', 'points'];
+const FIELDS = ['answers'];
 
 // hanya field yang diizinkan yang boleh masuk ke database (cegah mass-assignment kolom audit)
 const pick = (data = {}) => Object.fromEntries(

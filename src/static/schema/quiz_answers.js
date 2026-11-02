@@ -206,13 +206,6 @@ const quizAnswersSchemas = {
       }
     }
   },
-  QuizAnswerSaveResult: {
-    type: 'object',
-    properties: {
-      quiz_user: { $ref: '#/components/schemas/QuizUser' },
-      quiz_answer: { $ref: '#/components/schemas/QuizAnswer' }
-    }
-  },
   // dikirim sebagai multipart/form-data, jadi answers berupa string JSON
   QuizAnswerInput: {
     type: 'object',
@@ -228,7 +221,6 @@ const quizAnswersSchemas = {
         ].join(' '),
         example: '[{"line":1,"text":"text jawab","is_correct":true}]'
       },
-      points: { type: 'integer', minimum: 0, default: 0, description: 'Hanya dipakai untuk soal short_answer; soal lain points diisi otomatis oleh penilaian', example: 0 },
       files: { type: 'string', format: 'binary', description: 'File lampiran opsional (gambar, pdf, doc/x, xls/x, ppt/x, txt, zip; maks 10MB). Jika dikirim, selalu menggantikan file lama.' },
       file_delete: {
         type: 'boolean',

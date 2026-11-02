@@ -66,11 +66,6 @@ const createValidation = [
     .custom(assertAnswers)
     .bail()
     .customSanitizer(normalizeAnswers),
-  body('points')
-    .optional({ nullable: true, checkFalsy: true })
-    .isInt({ min: 0 })
-    .withMessage('points harus berupa angka bulat >= 0')
-    .toInt(),
   body('file_delete')
     .optional()
     .isBoolean()

@@ -49,8 +49,9 @@ const getById = async (req, res) => {
 
 const create = async (req, res) => {
   try {
-    const data = await service.createItem(req.body, req.file, req.user.id);
-    return successResponse(res, data, 'Data berhasil disimpan', 201);
+    await service.createItem(req.body, req.file, req.user.id);
+    // hasil penilaian tidak dikirim agar peserta tidak tahu jawabannya benar atau salah
+    return successResponse(res, null, 'Data berhasil disimpan', 201);
   } catch (error) {
     return handleError(res, error);
   }
