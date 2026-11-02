@@ -43,6 +43,7 @@ const resources = [
   { key: "quizzes", label: "Quiz", endpoint: `${API_PREFIX}/quizzes` },
   { key: "quiz-questions", label: "Soal Quiz", endpoint: `${API_PREFIX}/quiz-questions`},
   { key: "quiz-answers", label: "Jawaban Quiz", endpoint: `${API_PREFIX}/quiz-answers`, only: ["read", "detail", "create", "delete", "restore"] },
+  { key: "quiz-results", label: "Hasil Quiz", endpoint: `${API_PREFIX}/quiz_results`, only: ["read"] },
   { key: "log-activity", label: "Log Activity", endpoint: `${API_PREFIX}/log-activity`, only: ["read", "create"],
   },
 ];
@@ -218,6 +219,7 @@ const rolePermissionMap = {
     "quiz-answers.quizzes",
     "quiz-answers.quizzes-detail",
     "quiz-answers.results",
+    "quiz-results.read",
     "log-activity.read",
     "log-activity.create",
   ],

@@ -32,6 +32,7 @@ const logActivityModule = require("../../modules/log_activity");
 const quizModule = require("../../modules/quiz");
 const quizQuestionModule = require("../../modules/quiz_question");
 const quizAnswersModule = require("../../modules/quiz_answers");
+const quizResultsModule = require("../../modules/quiz_results");
 routing.use(`${API_TAG}/auth`, authModule);
 routing.use(`${API_TAG}/roles`, roleModule);
 routing.use(`${API_TAG}/permissions`, permissionModule);
@@ -42,6 +43,7 @@ routing.use(`${API_TAG}/log-activity`, logActivityModule);
 routing.use(`${API_TAG}/quizzes`, quizModule);
 routing.use(`${API_TAG}/quiz-questions`, quizQuestionModule);
 routing.use(`${API_TAG}/quiz-answers`, quizAnswersModule);
+routing.use(`${API_TAG}/quiz_results`, quizResultsModule);
 
 // Tambahkan routes module Anda di sini
 // Example:

@@ -1,0 +1,93 @@
+const { pgCore: db } = require("../../config/database");
+const { normalizeListParams } = require("../../utils/list_params");
+
+const TABLE_NAME = "quiz_users";
+const EMPLOYEE_TABLE = "gate_sso_employees";
+
+/**
+ * Repository Layer - Database Operations (quiz_results)
+ * Data utama adalah rekap pengerjaan quiz per user (quiz_users).
+ */
+
+const SORTABLE = {
+  quizze_title: "quizzes.title",
+  module_title: "modules.title",
+  created_at: "quiz_users.created_at",
+  updated_at: "quiz_users.updated_at",
+};
+
+// completed jika tidak ada jawaban yang masih kosong; dipakai untuk kolom response dan filter status
+const STATUS_SQL = `CASE WHEN COALESCE(quiz_users.uncompleted_count, '0') = '0' THEN 'completed' ELSE 'uncompleted' END`;
+
+// nama diambil dari foreign table gate_sso_employees (FDW ke database gate_sso);
+// pakai subquery agar jumlah baris tidak berlipat bila employee_id duplikat
+const employeeName = (column, alias) =>
+  db.raw(
+    `(select e.employee_name from ${EMPLOYEE_TABLE} e where e.employee_id = ${TABLE_NAME}.${column} limit 1) as ${alias}`,
+  );
+
+const COLUMNS = [
+  "quiz_users.id as quiz_result_id",
+  employeeName("created_by", "created_by_name"),
+  employeeName("updated_by", "updated_by_name"),
+  "quizzes.title as quizze_title",
+  "modules.title as module_title",
+  "quiz_users.completed_count",
+  "quiz_users.uncompleted_count",
+  db.raw(`${STATUS_SQL} as status`),
+  db.raw(`COALESCE(quiz_users.updated_at, quiz_users.created_at) as send_date`),
+  "quiz_users.updated_at",
+  "quiz_users.total_point",
+  "quizzes.max_points",
+];
+
+const findAll = async (params = {}) => {
+  const { page, limit, sortColumn, sortOrder, search } = normalizeListParams(
+    params,
+    {
+      sortable: SORTABLE,
+      defaultSort: "created_at",
+      defaultOrder: "desc",
+    },
+  );
+  const offset = (page - 1) * limit;
+
+  const base = () => {
+    const q = db(TABLE_NAME)
+      .leftJoin("quizzes", "quizzes.id", "quiz_users.quizze_id")
+      .leftJoin("modules", "modules.id", "quizzes.modules_id")
+      .where("quiz_users.is_delete", false);
+    if (params.quizzes_id) q.andWhere("quiz_users.quizze_id", params.quizzes_id);
+    if (params.status) q.andWhereRaw(`${STATUS_SQL} = ?`, [params.status]);
+    if (search) {
+      q.andWhere((b) =>
+        b
+          .whereILike("quizzes.title", `%${search}%`)
+          .orWhereILike("modules.title", `%${search}%`),
+      );
+    }
+    return q;
+  };
+
+  const items = await base()
+    .select(COLUMNS)
+    .orderBy(sortColumn, sortOrder)
+    .limit(limit)
+    .offset(offset);
+
+  const total = await base().count("quiz_users.id as count").first();
+
+  return {
+    items,
+    pagination: {
+      page,
+      limit,
+      total: parseInt(total.count),
+      totalPages: Math.ceil(total.count / limit),
+    },
+  };
+};
+
+module.exports = {
+  findAll,
+};

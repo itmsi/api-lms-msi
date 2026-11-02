@@ -87,34 +87,64 @@ const nextLine = async (quizzesId) => {
   return (parseInt(row.max, 10) || 0) + 1;
 };
 
+/**
+ * Hitung ulang quizzes.max_points dari poin soal aktif, dalam transaksi yang sama dengan perubahan soal.
+ * Baris quiz dikunci dulu agar perubahan soal yang berjalan bersamaan dihitung bergantian dan tidak saling menimpa.
+ */
+const recalcMaxPoints = async (quizId, trx) => {
+  await trx('quizzes').where({ id: quizId }).forNoKeyUpdate().first('id');
+
+  const { total } = await trx(TABLE_NAME)
+    .where({ quizzes_id: quizId, is_delete: false })
+    .sum('points as total')
+    .first();
+
+  await trx('quizzes').where({ id: quizId }).update({ max_points: String(total || 0) });
+};
+
 const create = async (data, actorId = null) => {
-  const [result] = await db(TABLE_NAME)
-    .insert({ ...data, created_by: actorId, created_at: db.fn.now(), updated_at: db.fn.now() })
-    .returning('id');
-  return await findById(result.id);
+  const id = await db.transaction(async (trx) => {
+    const [result] = await trx(TABLE_NAME)
+      .insert({ ...data, created_by: actorId, created_at: trx.fn.now(), updated_at: trx.fn.now() })
+      .returning('id');
+    await recalcMaxPoints(data.quizzes_id, trx);
+    return result.id;
+  });
+  return await findById(id);
 };
 
 const update = async (id, data, actorId = null) => {
-  const [result] = await db(TABLE_NAME)
-    .where({ id, is_delete: false })
-    .update({ ...data, updated_by: actorId, updated_at: db.fn.now() })
-    .returning('id');
+  const result = await db.transaction(async (trx) => {
+    const [updated] = await trx(TABLE_NAME)
+      .where({ id, is_delete: false })
+      .update({ ...data, updated_by: actorId, updated_at: trx.fn.now() })
+      .returning(['id', 'quizzes_id']);
+    if (updated && data.points !== undefined) await recalcMaxPoints(updated.quizzes_id, trx);
+    return updated;
+  });
   return result ? await findById(result.id) : null;
 };
 
 const remove = async (id, actorId = null) => {
-  const [result] = await db(TABLE_NAME)
-    .where({ id, is_delete: false })
-    .update({ is_delete: true, deleted_at: db.fn.now(), deleted_by: actorId })
-    .returning('id');
-  return result;
+  return await db.transaction(async (trx) => {
+    const [result] = await trx(TABLE_NAME)
+      .where({ id, is_delete: false })
+      .update({ is_delete: true, deleted_at: trx.fn.now(), deleted_by: actorId })
+      .returning(['id', 'quizzes_id']);
+    if (result) await recalcMaxPoints(result.quizzes_id, trx);
+    return result;
+  });
 };
 
 const restore = async (id, actorId = null) => {
-  const [result] = await db(TABLE_NAME)
-    .where({ id, is_delete: true })
-    .update({ is_delete: false, deleted_at: null, deleted_by: null, updated_at: db.fn.now(), updated_by: actorId })
-    .returning('id');
+  const result = await db.transaction(async (trx) => {
+    const [restored] = await trx(TABLE_NAME)
+      .where({ id, is_delete: true })
+      .update({ is_delete: false, deleted_at: null, deleted_by: null, updated_at: trx.fn.now(), updated_by: actorId })
+      .returning(['id', 'quizzes_id']);
+    if (restored) await recalcMaxPoints(restored.quizzes_id, trx);
+    return restored;
+  });
   return result ? await findById(result.id) : null;
 };
 
