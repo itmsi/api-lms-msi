@@ -102,7 +102,7 @@ const quizAnswersSchemas = {
       completed_count: { type: 'string', nullable: true, description: 'quiz_users.completed_count', example: '8' },
       uncompleted_count: { type: 'string', nullable: true, description: 'quiz_users.uncompleted_count', example: '2' },
       total_point: { type: 'string', nullable: true, description: 'quiz_users.total_point', example: '80' },
-      total_correct_points: { type: 'string', nullable: true, description: 'quiz_users.total_correct_points: jumlah quiz_answers.points milik user', example: '80' },
+      total_correct_points: { type: 'string', nullable: true, description: 'quiz_users.total_correct_points: jumlah quiz_answers.admin_points milik user', example: '80' },
       total_possible_points: { type: 'string', nullable: true, description: 'quiz_users.total_possible_points: jumlah quiz_questions.points dari soal aktif quiz', example: '100' }
     }
   },
@@ -231,6 +231,12 @@ const quizAnswersSchemas = {
         type: 'boolean',
         description: 'Jika true, hapus file jawaban yang ada (files jadi null). Jika false/tidak dikirim, file lama dipertahankan. Diabaikan jika ada file baru.',
         example: false
+      },
+      send_date: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Isi hanya pada jawaban terakhir yang dikirim (format ISO 8601): nilainya disimpan ke quiz_users.send_date. Kosongkan untuk jawaban lainnya.',
+        example: '2026-11-03T08:20:00.000Z'
       }
     }
   }

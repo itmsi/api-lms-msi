@@ -207,8 +207,9 @@ const findAnswerById = async (id, conn = db) => {
  * Simpan jawaban dalam satu transaksi. quiz_answers dicari by quiz_question_id + created_by:
  * jika sudah ada di-update, jika belum dibuat baru. Setelah itu jawaban dinilai dan rekap quiz_users
  * dihitung ulang lewat gradeAnswer (lihat grading.js), lalu quiz_answers.quiz_user_id diisi.
+ * sendDate terisi berarti ini jawaban terakhir yang dikirim: nilainya disimpan ke quiz_users.send_date.
  */
-const upsert = async (quizId, answerData, actorId = null) => {
+const upsert = async (quizId, answerData, actorId = null, sendDate = null) => {
   return await db.transaction(async (trx) => {
     const existingAnswer = await trx(ANSWER_TABLE)
       .where({
@@ -241,6 +242,12 @@ const upsert = async (quizId, answerData, actorId = null) => {
     }
 
     await gradeAnswer(answerData.quiz_question_id, actorId, trx);
+
+    if (sendDate) {
+      await trx(TABLE_NAME)
+        .where({ quizze_id: quizId, created_by: actorId, is_delete: false })
+        .update({ send_date: sendDate });
+    }
 
     const quizUser = await baseQuery(trx)
       .where({

@@ -101,7 +101,7 @@ const createItem = async (itemData, file, actorId) => {
     answerData.files = null;
   }
 
-  return await repository.upsert(question.quizzes_id, answerData, actorId);
+  return await repository.upsert(question.quizzes_id, answerData, actorId, itemData.send_date || null);
 };
 
 // soal beserta jawaban user (created_by) untuk soal tersebut; answer null jika user belum menjawab

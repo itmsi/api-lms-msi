@@ -32,7 +32,7 @@ quizAnswersPaths['/quiz-answers/{id}/restore'].post.description = 'Restore rekap
 const create = quizAnswersPaths['/quiz-answers/create'].post;
 create.summary = 'Simpan jawaban quiz (upsert)';
 create.description = [
-  'Dikirim sebagai multipart/form-data karena ada upload file (field files, di-upload ke Nextcloud). Payload hanya quiz_question_id, answers, files, file_delete; user diambil dari token (created_by). points tidak bisa dikirim dari payload, hanya diisi sistem.',
+  'Dikirim sebagai multipart/form-data karena ada upload file (field files, di-upload ke Nextcloud). Payload hanya quiz_question_id, answers, files, file_delete, send_date (diisi hanya pada jawaban terakhir); user diambil dari token (created_by). points tidak bisa dikirim dari payload, hanya diisi sistem.',
   'Format answers: [{"line":1,"text":"text jawab","is_correct":true}] (is_correct = true berarti opsi dipilih; [] = belum dijawab).',
   '1. quiz_answers dicari berdasarkan quiz_question_id + created_by. Jika sudah ada di-update, jika belum dibuat baru.',
   '2. Penilaian otomatis, kecuali soal short_answer: semua opsi quiz_questions.options dengan is_correct = true dibandingkan dengan line yang dipilih di answers. Jika sama persis, quiz_answers.is_correct = true dan points & admin_points = quiz_questions.points; jika tidak, is_correct = false dan points & admin_points = 0.',

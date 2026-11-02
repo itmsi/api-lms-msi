@@ -36,7 +36,7 @@ const COLUMNS = [
   "quiz_users.completed_count",
   "quiz_users.uncompleted_count",
   db.raw(`${STATUS_SQL} as status`),
-  db.raw(`COALESCE(quiz_users.updated_at, quiz_users.created_at) as send_date`),
+  "quiz_users.send_date",
   "quiz_users.updated_at",
   "quiz_users.total_point",
   "quizzes.max_points",
@@ -119,7 +119,7 @@ const findQuestionAnswers = async (quizId, userId) => {
       "quiz_answers.id as quiz_answer_id",
       "quiz_answers.answers as user_answer",
       "quiz_answers.files as user_answer_file",
-      db.raw("COALESCE(quiz_answers.points, 0) as user_point"),
+      db.raw("COALESCE(quiz_answers.admin_points, 0) as user_point"),
       db.raw(
         `CASE WHEN quiz_answers.id IS NULL THEN NULL WHEN quiz_answers.is_correct THEN 'correct' ELSE 'incorrect' END as answer_status`,
       ),

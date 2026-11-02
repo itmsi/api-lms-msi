@@ -70,7 +70,11 @@ const createValidation = [
     .optional()
     .isBoolean()
     .withMessage('file_delete harus berupa boolean')
-    .toBoolean()
+    .toBoolean(),
+  body('send_date')
+    .optional({ nullable: true, checkFalsy: true })
+    .isISO8601({ strict: true })
+    .withMessage('send_date harus berupa tanggal format ISO 8601')
 ];
 
 const getByIdValidation = [idParam];

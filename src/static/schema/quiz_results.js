@@ -11,11 +11,11 @@ const quizResultProps = {
   completed_count: { type: 'string', nullable: true, description: 'quiz_users.completed_count', example: '8' },
   uncompleted_count: { type: 'string', nullable: true, description: 'quiz_users.uncompleted_count', example: '2' },
   status: { type: 'string', enum: ['completed', 'uncompleted'], description: 'completed jika uncompleted_count = 0, selain itu uncompleted', example: 'uncompleted' },
-  send_date: { type: 'string', format: 'date-time', description: 'quiz_users.updated_at, jika kosong quiz_users.created_at', example: '2026-11-03T08:20:00.000Z' },
+  send_date: { type: 'string', format: 'date-time', nullable: true, description: 'quiz_users.send_date: waktu peserta mengirim jawaban terakhir, null jika belum dikirim', example: '2026-11-03T08:20:00.000Z' },
   updated_at: { type: 'string', format: 'date-time', nullable: true, description: 'quiz_users.updated_at', example: '2026-11-03T08:20:00.000Z' },
   total_point: { type: 'string', nullable: true, description: 'quiz_users.total_point', example: '80' },
   max_points: { type: 'string', nullable: true, description: 'quizzes.max_points: jumlah poin seluruh soal aktif quiz, dihitung ulang otomatis saat soal berubah', example: '100' },
-  total_correct_points: { type: 'string', nullable: true, description: 'quiz_users.total_correct_points: jumlah quiz_answers.points milik user', example: '80' },
+  total_correct_points: { type: 'string', nullable: true, description: 'quiz_users.total_correct_points: jumlah quiz_answers.admin_points milik user', example: '80' },
   total_possible_points: { type: 'string', nullable: true, description: 'quiz_users.total_possible_points: jumlah quiz_questions.points dari soal aktif quiz', example: '100' }
 };
 
@@ -80,7 +80,7 @@ const quizResultsSchemas = {
             quiz_answer_id: { type: 'string', format: 'uuid', nullable: true, description: 'quiz_answers.id, null jika user belum menjawab', example: '7d6c5b4a-3e2f-4a1b-9c8d-0e1f2a3b4c5d' },
             user_answer: { type: 'array', nullable: true, description: 'quiz_answers.answers, null jika user belum menjawab', items: { $ref: '#/components/schemas/QuizAnswerItem' }, example: answerItemExample },
             user_answer_file: { type: 'string', nullable: true, description: 'quiz_answers.files, null jika user belum menjawab atau tidak melampirkan file', example: null },
-            user_point: { type: 'integer', description: 'quiz_answers.points, 0 jika user belum menjawab', example: 10 },
+            user_point: { type: 'integer', description: 'quiz_answers.admin_points, 0 jika user belum menjawab', example: 10 },
             answer_status: { type: 'string', enum: ['correct', 'incorrect'], nullable: true, description: 'quiz_answers.is_correct: true = correct, false = incorrect, null jika user belum menjawab', example: 'correct' }
           }
         }

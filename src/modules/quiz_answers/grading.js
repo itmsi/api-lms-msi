@@ -53,7 +53,7 @@ const isAnswerCorrect = (options, answers) => {
  * - total_point       : jumlah admin_points
  * - completed_count   : jumlah jawaban dengan answers tidak kosong
  * - uncompleted_count : jumlah jawaban dengan answers kosong ([])
- * - total_correct_points  : jumlah quiz_answers.points
+ * - total_correct_points  : jumlah admin_points
  * - total_possible_points : jumlah quiz_questions.points dari seluruh soal aktif quiz
  * quiz_users dibuat bila belum ada (dan user punya jawaban); jika sudah ada hanya di-update bila nilainya berubah.
  */
@@ -66,7 +66,7 @@ const recalcQuizUser = async (quizId, createdBy, conn = db) => {
       'qa.created_by': createdBy,
       'qa.is_delete': false
     })
-    .select('qa.answers', 'qa.admin_points', 'qa.points');
+    .select('qa.answers', 'qa.admin_points');
 
   const { total: possiblePoints } = await conn('quiz_questions')
     .where({ quizzes_id: quizId, is_delete: false })
@@ -78,7 +78,7 @@ const recalcQuizUser = async (quizId, createdBy, conn = db) => {
     total_point: String(answers.reduce((sum, a) => sum + toNumber(a.admin_points), 0)),
     completed_count: String(completed),
     uncompleted_count: String(answers.length - completed),
-    total_correct_points: String(answers.reduce((sum, a) => sum + toNumber(a.points), 0)),
+    total_correct_points: String(answers.reduce((sum, a) => sum + toNumber(a.admin_points), 0)),
     total_possible_points: String(possiblePoints || 0)
   };
 

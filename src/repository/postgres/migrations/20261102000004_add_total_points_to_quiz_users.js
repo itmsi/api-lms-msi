@@ -1,7 +1,7 @@
 /**
  * Migration: Tambah kolom total_correct_points & total_possible_points pada tabel quiz_users
  * Nilai: string nullable
- * - total_correct_points : jumlah quiz_answers.points milik user pada soal aktif quiz
+ * - total_correct_points : jumlah quiz_answers.admin_points milik user pada soal aktif quiz
  * - total_possible_points: jumlah quiz_questions.points dari soal aktif quiz
  * Rekap aktif yang sudah ada langsung diisi
  */
@@ -16,7 +16,7 @@ exports.up = async function (knex) {
     UPDATE quiz_users
     SET
       total_correct_points = (
-        SELECT COALESCE(SUM(qa.points), 0)::text
+        SELECT COALESCE(SUM(qa.admin_points), 0)::text
         FROM quiz_answers qa
         JOIN quiz_questions qq ON qq.id = qa.quiz_question_id
         WHERE qq.quizzes_id = quiz_users.quizze_id
