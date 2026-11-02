@@ -36,7 +36,7 @@ create.description = [
   'Format answers: [{"line":1,"text":"text jawab","is_correct":true}] (is_correct = true berarti opsi dipilih; [] = belum dijawab).',
   '1. quiz_answers dicari berdasarkan quiz_question_id + created_by. Jika sudah ada di-update, jika belum dibuat baru.',
   '2. Penilaian otomatis, kecuali soal short_answer: semua opsi quiz_questions.options dengan is_correct = true dibandingkan dengan line yang dipilih di answers. Jika sama persis, quiz_answers.is_correct = true dan points & admin_points = quiz_questions.points; jika tidak, is_correct = false dan points & admin_points = 0.',
-  '3. Rekap quiz_users (quizze_id dari quiz_questions.quizzes_id) dihitung ulang: total_point = jumlah admin_points, completed_count = jumlah jawaban dengan answers tidak [], uncompleted_count = jumlah jawaban dengan answers = []. quiz_users dibuat bila belum ada, dan hanya di-update bila nilainya berubah.',
+  '3. Rekap quiz_users (quizze_id dari quiz_questions.quizzes_id) dihitung ulang: total_point = jumlah admin_points, completed_count = jumlah jawaban dengan answers tidak [], uncompleted_count = jumlah jawaban dengan answers = []. quiz_users dibuat bila belum ada, dan hanya di-update bila nilainya berubah. quiz_answers.quiz_user_id diisi dengan quiz_users.id tersebut.',
   'Nilai ulang juga berjalan otomatis saat type/options/points soal diubah (PUT /quiz-questions/{id}).',
   'File: upload baru selalu menggantikan file lama; file_delete=true mengosongkan file bila tidak ada upload baru.'
 ].join('\n\n');

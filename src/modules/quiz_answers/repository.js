@@ -204,7 +204,7 @@ const findAnswerById = async (id, conn = db) => {
 /**
  * Simpan jawaban dalam satu transaksi. quiz_answers dicari by quiz_question_id + created_by:
  * jika sudah ada di-update, jika belum dibuat baru. Setelah itu jawaban dinilai dan rekap quiz_users
- * dihitung ulang lewat gradeAnswer (lihat grading.js).
+ * dihitung ulang lewat gradeAnswer (lihat grading.js), lalu quiz_answers.quiz_user_id diisi.
  */
 const upsert = async (quizId, answerData, actorId = null) => {
   return await db.transaction(async (trx) => {
@@ -240,14 +240,21 @@ const upsert = async (quizId, answerData, actorId = null) => {
 
     await gradeAnswer(answerData.quiz_question_id, actorId, trx);
 
+    const quizUser = await baseQuery(trx)
+      .where({
+        "quiz_users.quizze_id": quizId,
+        "quiz_users.created_by": actorId,
+        "quiz_users.is_delete": false,
+      })
+      .first(COLUMNS);
+
+    // quiz_users baru tersedia setelah gradeAnswer (dibuat saat jawaban pertama user pada quiz ini)
+    await trx(ANSWER_TABLE)
+      .where({ id: answerId })
+      .update({ quiz_user_id: quizUser.id });
+
     return {
-      quiz_user: await baseQuery(trx)
-        .where({
-          "quiz_users.quizze_id": quizId,
-          "quiz_users.created_by": actorId,
-          "quiz_users.is_delete": false,
-        })
-        .first(COLUMNS),
+      quiz_user: quizUser,
       quiz_answer: await findAnswerById(answerId, trx),
     };
   });
