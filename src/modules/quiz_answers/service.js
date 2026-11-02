@@ -136,11 +136,22 @@ const getResults = async ({ quizzes_id: quizId, created_by: userId }) => {
     answer_points: points,
     answer_admin_points: adminPoints,
     answer_files: files,
+    answer_is_correct: isCorrect,
+    question_answer: options,
     ...question
   }) => ({
     ...question,
+    // kunci jawaban: hanya opsi dengan is_correct = true
+    question_answer: (options || []).filter((option) => option.is_correct === true),
     answer: answerId
-      ? { quiz_answer_id: answerId, answers, points, admin_points: adminPoints, files }
+      ? {
+        quiz_answer_id: answerId,
+        answers,
+        points,
+        admin_points: adminPoints,
+        files,
+        answer_status: isCorrect ? 'correct' : 'incorrect'
+      }
       : null
   }));
 

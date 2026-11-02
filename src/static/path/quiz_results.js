@@ -36,7 +36,7 @@ const quizResultsPaths = {
     get: {
       tags: ['Quiz Results'],
       summary: 'Get quiz result by ID',
-      description: 'Detail hasil pengerjaan quiz (id = quiz_users.id) beserta question_answers: seluruh soal aktif quiz (urut berdasarkan line) dan jawaban user. Kolom jawaban bernilai null dan user_point 0 jika soal belum dijawab. question_answer berisi kunci jawaban (opsi is_correct = true).',
+      description: 'Detail hasil pengerjaan quiz (id = quiz_users.id) beserta question_answers: seluruh soal aktif quiz (urut berdasarkan line) dan jawaban user. Kolom jawaban dan answer_status bernilai null serta user_point 0 jika soal belum dijawab. answer_status dari quiz_answers.is_correct: correct / incorrect. question_answer berisi kunci jawaban (opsi is_correct = true).',
       parameters: [idParam('quiz result')],
       responses: {
         ...authErrors,

@@ -118,6 +118,9 @@ const findQuestionAnswers = async (quizId, userId) => {
       "quiz_answers.answers as user_answer",
       "quiz_answers.files as user_answer_file",
       db.raw("COALESCE(quiz_answers.points, 0) as user_point"),
+      db.raw(
+        `CASE WHEN quiz_answers.id IS NULL THEN NULL WHEN quiz_answers.is_correct THEN 'correct' ELSE 'incorrect' END as answer_status`,
+      ),
     )
     .orderBy("quiz_questions.line", "asc")
     .orderBy("quiz_questions.created_at", "asc");

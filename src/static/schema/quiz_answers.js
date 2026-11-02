@@ -140,6 +140,8 @@ const quizAnswersSchemas = {
             estimated_time: { type: 'integer', nullable: true, example: 1 },
             estimated_time_unit: { type: 'string', enum: ['minutes', 'seconds'], example: 'minutes' },
             points: { type: 'integer', description: 'Poin soal', example: 10 },
+            question_point: { type: 'integer', description: 'quiz_questions.points', example: 10 },
+            question_answer: { type: 'array', description: 'Kunci jawaban: quiz_questions.options dengan is_correct = true', items: { $ref: '#/components/schemas/QuizAnswerItem' }, example: [{ line: 2, text: 'Laporkan ke tim IT', is_correct: true }] },
             image: { type: 'string', nullable: true, description: 'Link gambar soal (Nextcloud share link + /preview)', example: null },
             answer: {
               type: 'object',
@@ -150,7 +152,8 @@ const quizAnswersSchemas = {
                 answers: { type: 'array', nullable: true, items: { $ref: '#/components/schemas/QuizAnswerItem' } },
                 points: { type: 'integer', description: 'Poin jawaban', example: 10 },
                 admin_points: { type: 'string', nullable: true, description: 'Poin penilaian', example: '10' },
-                files: { type: 'string', nullable: true, description: 'Share link file lampiran dari Nextcloud', example: null }
+                files: { type: 'string', nullable: true, description: 'Share link file lampiran dari Nextcloud', example: null },
+                answer_status: { type: 'string', enum: ['correct', 'incorrect'], description: 'quiz_answers.is_correct: true = correct, false = incorrect', example: 'correct' }
               }
             }
           }

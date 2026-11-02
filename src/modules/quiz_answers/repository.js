@@ -425,6 +425,8 @@ const findResultQuestions = async (quizId, userId) => {
       "quiz_questions.estimated_time",
       "quiz_questions.estimated_time_unit",
       "quiz_questions.points",
+      "quiz_questions.points as question_point",
+      "quiz_questions.options as question_answer",
       db.raw(
         `CASE WHEN quiz_questions.image IS NOT NULL AND quiz_questions.image <> '' THEN concat_ws('', quiz_questions.image, '/preview'::text) ELSE quiz_questions.image END as image`,
       ),
@@ -433,6 +435,7 @@ const findResultQuestions = async (quizId, userId) => {
       "quiz_answers.points as answer_points",
       "quiz_answers.admin_points as answer_admin_points",
       "quiz_answers.files as answer_files",
+      "quiz_answers.is_correct as answer_is_correct",
     )
     .orderBy("quiz_questions.line", "asc")
     .orderBy("quiz_questions.created_at", "asc");
