@@ -143,7 +143,9 @@ const findQuizzes = async (params = {}) => {
   const base = () => {
     const q = db('quizzes')
       .leftJoin('modules', 'modules.id', 'quizzes.modules_id')
-      .where('quizzes.is_delete', false);
+      .where('quizzes.is_delete', false)
+      // quiz yang belum dimulai belum boleh tampil
+      .andWhere('quizzes.start_date', '<=', db.raw('CURRENT_DATE'));
     if (params.modules_id) q.andWhere('quizzes.modules_id', params.modules_id);
     if (params.type) q.andWhereRaw('quizzes.type @> ?::jsonb', [JSON.stringify([params.type])]);
     if (search) q.andWhereILike('quizzes.title', `%${search}%`);
