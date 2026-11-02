@@ -222,7 +222,7 @@ const quizAnswersSchemas = {
         description: [
           'Wajib. String JSON array dengan format sama seperti options soal: [{"line":1,"text":"text jawab","is_correct":true}].',
           'is_correct = true berarti opsi tersebut dipilih user (line harus sesuai line opsi soal). Kirim [] jika soal belum dijawab.',
-          'Penilaian (kecuali short_answer): benar jika semua line yang dipilih sama persis dengan semua opsi is_correct = true pada soal.'
+          'Penilaian: multiple_choice & true_false harus sama persis dengan opsi is_correct = true; multiple_answers dinilai sebagian sesuai jumlah opsi benar yang dipilih; short_answer dinilai manual oleh admin.'
         ].join(' '),
         example: '[{"line":1,"text":"text jawab","is_correct":true}]'
       },

@@ -12,8 +12,6 @@ const { pgCore: db } = require('../../config/database');
  * Semua fungsi menerima `conn` opsional (mis. trx) agar bisa ikut transaksi pemanggil.
  */
 
-const SKIPPED_TYPES = ['short_answer']; // dinilai terpisah
-
 const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
 // himpunan line (unik, terurut) dari item yang is_correct = true
@@ -46,6 +44,34 @@ const isAnswerCorrect = (options, answers) => {
   return correct.length > 0
     && correct.length === chosen.length
     && correct.every((line, idx) => line === chosen[idx]);
+};
+
+/**
+ * multiple_answers dinilai sebagian: poin = poin soal x jumlah opsi benar yang dipilih / jumlah semua opsi benar,
+ * dibulatkan ke angka terdekat (0.5 ke atas). Jawaban dianggap benar jika minimal satu opsi benar dipilih.
+ * Opsi salah yang ikut dipilih tidak mengurangi poin.
+ */
+const gradeMultipleAnswers = (question, answers) => {
+  const correct = selectedLines(question.options);
+  const chosen = selectedLines(answers);
+  const hits = correct.filter((line) => chosen.includes(line)).length;
+
+  return {
+    isCorrect: hits > 0,
+    points: hits > 0 ? Math.round((question.points * hits) / correct.length) : 0
+  };
+};
+
+// multiple_choice & true_false hanya punya satu jawaban benar: harus sama persis, poin penuh atau 0
+const gradeAllOrNothing = (question, answers) => {
+  const isCorrect = isAnswerCorrect(question.options, answers);
+  return { isCorrect, points: isCorrect ? question.points : 0 };
+};
+
+const GRADERS = {
+  multiple_choice: gradeAllOrNothing,
+  multiple_answers: gradeMultipleAnswers,
+  true_false: gradeAllOrNothing
 };
 
 /**
@@ -111,7 +137,8 @@ const recalcQuizUser = async (quizId, createdBy, conn = db) => {
 /**
  * Nilai satu jawaban (quiz_question_id + created_by), lalu hitung ulang rekap quiz_users user tsb.
  * 1. ambil type, options, points soal
- * 2. selain short_answer: is_correct = hasil penilaian; jika benar points & admin_points = points soal, jika salah 0
+ * 2. dinilai sesuai type soal (lihat GRADERS), short_answer dilewati karena dinilai manual oleh admin;
+ *    hasilnya disimpan ke is_correct, points & admin_points
  * 3. rekap quiz_users dihitung ulang (quiz diambil dari quiz_questions.quizzes_id)
  */
 const gradeAnswer = async (quizQuestionId, createdBy, conn = db) => {
@@ -124,9 +151,10 @@ const gradeAnswer = async (quizQuestionId, createdBy, conn = db) => {
     .where({ quiz_question_id: quizQuestionId, created_by: createdBy, is_delete: false })
     .first('id', 'answers', 'points', 'admin_points', 'is_correct');
 
-  if (answer && !SKIPPED_TYPES.includes(question.type)) {
-    const isCorrect = isAnswerCorrect(question.options, answer.answers);
-    const points = isCorrect ? question.points : 0;
+  const grade = GRADERS[question.type];
+
+  if (answer && grade) {
+    const { isCorrect, points } = grade(question, answer.answers);
 
     if (
       answer.is_correct !== isCorrect
