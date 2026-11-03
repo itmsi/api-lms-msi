@@ -2,6 +2,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const repository = require('./repository');
 const quizService = require('../quiz/service');
+const { findPreviousAnswer, needsAssessment, assessShortAnswer } = require('./ai_assessment');
 const {
   client,
   ensureDirectoryExists,
@@ -101,7 +102,16 @@ const createItem = async (itemData, file, actorId) => {
     answerData.files = null;
   }
 
-  return await repository.upsert(question.quizzes_id, answerData, actorId, itemData.send_date || null);
+  const isShortAnswer = question.type === 'short_answer';
+  const previous = isShortAnswer ? await findPreviousAnswer(question.id, actorId) : null;
+
+  const result = await repository.upsert(question.quizzes_id, answerData, actorId, itemData.send_date || null);
+
+  if (isShortAnswer && needsAssessment(previous, itemData.answers)) {
+    await assessShortAnswer(result.quiz_answer.id);
+  }
+
+  return result;
 };
 
 // soal beserta jawaban user (created_by) untuk soal tersebut; answer null jika user belum menjawab

@@ -176,7 +176,15 @@ const updateAdminPoints = async (quizUserId, items, actorId = null) => {
     for (const { id, ...data } of items) {
       const [answer] = await trx("quiz_answers")
         .where({ id })
-        .update({ ...data, updated_by: actorId, updated_at: trx.fn.now() })
+        .update({
+          ...data,
+          // nilai admin menggantikan penilaian AI yang belum selesai / gagal, status SUCCESS tetap sebagai riwayat
+          ai_assessment_status: trx.raw(
+            "CASE WHEN ai_assessment_status IN ('PENDING', 'FAILED') THEN NULL ELSE ai_assessment_status END",
+          ),
+          updated_by: actorId,
+          updated_at: trx.fn.now(),
+        })
         .returning([
           "id as quiz_answer_id",
           "admin_points",

@@ -43,7 +43,7 @@ const quizAnswersSchemas = {
       question: { type: 'string', nullable: true, description: 'Teks soal (hasil join)', example: 'Apa langkah yang paling tepat?' },
       answers: { type: 'array', nullable: true, description: 'Jawaban user, format sama seperti options soal; is_correct = true berarti opsi dipilih', items: { $ref: '#/components/schemas/QuizAnswerItem' }, example: [{ line: 4, text: 'jalan yang di lalui oleh kendaraan berat', is_correct: true }] },
       points: { type: 'integer', description: 'Poin jawaban (diisi otomatis oleh penilaian, kecuali short_answer)', example: 10 },
-      admin_points: { type: 'string', nullable: true, description: 'Poin penilaian (diisi otomatis oleh penilaian, kecuali short_answer). Dijumlahkan ke quiz_users.total_point', example: '10' },
+      admin_points: { type: 'string', nullable: true, description: 'Poin penilaian (diisi otomatis oleh penilaian, short_answer dari hasil AI, bisa diubah admin). Dijumlahkan ke quiz_users.total_point', example: '10' },
       files: { type: 'string', nullable: true, description: 'Share link file lampiran dari Nextcloud', example: null },
       ...auditProps
     }
@@ -227,7 +227,7 @@ const quizAnswersSchemas = {
         description: [
           'Wajib. String JSON array dengan format sama seperti options soal: [{"line":1,"text":"text jawab","is_correct":true}].',
           'is_correct = true berarti opsi tersebut dipilih user (line harus sesuai line opsi soal). Kirim [] jika soal belum dijawab.',
-          'Penilaian: multiple_choice & true_false harus sama persis dengan opsi is_correct = true; multiple_answers dinilai sebagian sesuai jumlah opsi benar yang dipilih dikurangi jumlah opsi salah yang dipilih (minimal 0); short_answer dinilai manual oleh admin.'
+          'Penilaian: multiple_choice & true_false harus sama persis dengan opsi is_correct = true; multiple_answers dinilai sebagian sesuai jumlah opsi benar yang dipilih dikurangi jumlah opsi salah yang dipilih (minimal 0); short_answer dinilai AI dan bisa diubah admin.'
         ].join(' '),
         example: '[{"line":1,"text":"text jawab","is_correct":true}]'
       },

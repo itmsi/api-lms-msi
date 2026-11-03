@@ -478,7 +478,7 @@ const findQuizQuestions = async (quizId, userId) => {
 const findQuestion = async (questionId) => {
   return await db("quiz_questions")
     .where({ id: questionId, is_delete: false })
-    .first("id", "quizzes_id");
+    .first("id", "quizzes_id", "type");
 };
 
 module.exports = {

@@ -140,7 +140,8 @@ const recalcQuizUser = async (quizId, createdBy, conn = db) => {
 /**
  * Nilai satu jawaban (quiz_question_id + created_by), lalu hitung ulang rekap quiz_users user tsb.
  * 1. ambil type, options, points soal
- * 2. dinilai sesuai type soal (lihat GRADERS), short_answer dilewati karena dinilai manual oleh admin;
+ * 2. dinilai sesuai type soal (lihat GRADERS), short_answer dilewati karena dinilai AI (lihat ai_assessment.js)
+ *    dan bisa diubah admin;
  *    hasilnya disimpan ke is_correct, points & admin_points
  * 3. rekap quiz_users dihitung ulang (quiz diambil dari quiz_questions.quizzes_id)
  */
