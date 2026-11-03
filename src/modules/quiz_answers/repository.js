@@ -451,7 +451,8 @@ const findResultQuestions = async (quizId, userId) => {
 };
 
 // daftar soal ringkas milik quiz, dipakai GET /quiz-answers/quizzes/get/:id
-// is_answer = true jika user sudah punya data jawaban aktif untuk soal tsb
+// is_answer = true jika user sudah punya data jawaban aktif untuk soal tsb dengan answers tidak kosong
+// answers [] berarti belum dijawab (lihat grading.js)
 const findQuizQuestions = async (quizId, userId) => {
   return await db('quiz_questions')
     .where({ quizzes_id: quizId, is_delete: false })
@@ -465,6 +466,7 @@ const findQuizQuestions = async (quizId, userId) => {
           WHERE quiz_answers.quiz_question_id = quiz_questions.id
             AND quiz_answers.created_by = ?
             AND quiz_answers.is_delete = false
+            AND quiz_answers.answers <> '[]'::jsonb
         ) as is_answer`,
         [userId],
       ),

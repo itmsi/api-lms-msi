@@ -81,7 +81,7 @@ quizAnswersPaths['/quiz-answers/quizzes/get/{id}'] = {
   get: {
     tags: ['Quiz Answers'],
     summary: 'Get quiz by ID beserta soal',
-    description: 'Detail quiz (sama seperti GET /quizzes/{id}) ditambah questions: daftar soal aktif (id, line, question, is_answer) urut berdasarkan line. question berupa potongan teks soal tanpa tag HTML, maksimal 25 karakter lalu diakhiri "..." jika lebih panjang. is_answer = true jika user yang login (dari token) sudah punya data di quiz_answers untuk soal tersebut, false jika belum.',
+    description: 'Detail quiz (sama seperti GET /quizzes/{id}) ditambah questions: daftar soal aktif (id, line, question, is_answer) urut berdasarkan line. question berupa potongan teks soal tanpa tag HTML, maksimal 25 karakter lalu diakhiri "..." jika lebih panjang. is_answer = true jika user yang login (dari token) sudah punya data di quiz_answers untuk soal tersebut dengan answers tidak kosong, false jika belum ada data atau answers masih [].',
     parameters: [idParam('quiz')],
     responses: {
       ...authErrors,

@@ -74,7 +74,7 @@ const quizAnswersSchemas = {
             },
             is_answer: {
               type: 'boolean',
-              description: 'true jika user yang login sudah punya data jawaban (quiz_answers) untuk soal ini, false jika belum',
+              description: 'true jika user yang login sudah punya data jawaban (quiz_answers) untuk soal ini dengan answers tidak kosong, false jika belum ada data atau answers masih []',
               example: true
             }
           }
