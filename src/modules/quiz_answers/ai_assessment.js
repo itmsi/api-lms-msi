@@ -87,9 +87,13 @@ const resetAssessment = async (context, status) => {
   });
 };
 
+// respon API berformat { success, message, data: { score, ... }, timestamp }
 // score dibulatkan karena kolom points berupa integer, dan dibatasi 0 sampai poin soal
-const toScore = (data, maxPoints) => {
-  const score = data && data.score !== null && data.score !== '' ? Number(data.score) : NaN;
+const toScore = (body, maxPoints) => {
+  if (!body || body.success !== true || !body.data) return null;
+
+  const { score: rawScore } = body.data;
+  const score = rawScore !== null && rawScore !== '' ? Number(rawScore) : NaN;
   if (!Number.isFinite(score)) return null;
   return Math.min(Math.max(Math.round(score), 0), maxPoints);
 };
