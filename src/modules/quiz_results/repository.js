@@ -119,6 +119,7 @@ const findQuestionAnswers = async (quizId, userId) => {
       "quiz_answers.id as quiz_answer_id",
       "quiz_answers.answers as user_answer",
       "quiz_answers.files as user_answer_file",
+      "quiz_answers.files",
       // admin_points bisa bertipe varchar atau integer tergantung database, samakan dulu ke integer
       db.raw("COALESCE(quiz_answers.admin_points::integer, 0) as user_point"),
       db.raw(
