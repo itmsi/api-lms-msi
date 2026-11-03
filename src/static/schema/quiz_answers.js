@@ -133,7 +133,7 @@ const quizAnswersSchemas = {
       completed_count: { type: 'string', nullable: true, description: 'quiz_users.completed_count', example: '2' },
       uncompleted_count: { type: 'string', nullable: true, description: 'quiz_users.uncompleted_count', example: '1' },
       created_at: { type: 'string', format: 'date-time', nullable: true, description: 'quiz_users.created_at (mulai mengerjakan)', example: '2026-11-03T08:00:00.000Z' },
-      updated_at: { type: 'string', format: 'date-time', nullable: true, description: 'quiz_users.updated_at (terakhir menjawab)', example: '2026-11-03T08:20:00.000Z' },
+      updated_at: { type: 'string', format: 'date-time', nullable: true, description: 'quiz_users.updated_at (terakhir dinilai admin), null jika belum dinilai', example: '2026-11-03T08:20:00.000Z' },
       questions: {
         type: 'array',
         description: 'Seluruh soal aktif quiz (urut berdasarkan line)',

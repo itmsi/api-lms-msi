@@ -193,6 +193,10 @@ const updateAdminPoints = async (quizUserId, items, actorId = null) => {
       trx,
     );
 
+    await trx(TABLE_NAME)
+      .where({ id: quizUserId })
+      .update({ updated_by: actorId, updated_at: trx.fn.now() });
+
     return { quiz_result_id: quizUserId, total_point: totalPoint, answers };
   });
 };

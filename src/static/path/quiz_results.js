@@ -48,7 +48,7 @@ const quizResultsPaths = {
     put: {
       tags: ['Quiz Results'],
       summary: 'Update nilai jawaban oleh admin',
-      description: 'id adalah quiz_users.id. Body berupa array jawaban yang dinilai; semua jawaban harus milik hasil quiz ini dan admin_points tidak boleh melebihi poin soal (quiz_questions.points), jika ada satu saja yang tidak sesuai maka semuanya dibatalkan. admin_points terisi (termasuk "0"): is_correct = true. admin_points null atau kosong: is_correct = false dan admin_points disimpan sebagai 0. updated_at & updated_by diisi otomatis, lalu total_point pada quiz_users dihitung ulang.',
+      description: 'id adalah quiz_users.id. Body berupa array jawaban yang dinilai; semua jawaban harus milik hasil quiz ini dan admin_points tidak boleh melebihi poin soal (quiz_questions.points), jika ada satu saja yang tidak sesuai maka semuanya dibatalkan. admin_points terisi (termasuk "0"): is_correct = true. admin_points null atau kosong: is_correct = false dan admin_points disimpan sebagai 0. updated_at & updated_by pada quiz_answers dan quiz_users diisi otomatis (updated_by = admin dari token), lalu total_point pada quiz_users dihitung ulang.',
       parameters: [idParam('quiz result')],
       requestBody: { required: true, content: json(ref('QuizResultAdminPointsInput')) },
       responses: {

@@ -82,6 +82,7 @@ const GRADERS = {
  * - total_correct_points  : jumlah admin_points
  * - total_possible_points : jumlah quiz_questions.points dari seluruh soal aktif quiz
  * quiz_users dibuat bila belum ada (dan user punya jawaban); jika sudah ada hanya di-update bila nilainya berubah.
+ * updated_at & updated_by quiz_users tidak diisi di sini: hanya diisi saat admin menilai (PUT /quiz_results/:id).
  */
 const recalcQuizUser = async (quizId, createdBy, conn = db) => {
   const answers = await conn('quiz_answers as qa')
@@ -119,7 +120,7 @@ const recalcQuizUser = async (quizId, createdBy, conn = db) => {
     if (Object.keys(changes).length) {
       await conn('quiz_users')
         .where({ id: existing.id })
-        .update({ ...changes, updated_by: createdBy, updated_at: conn.fn.now() });
+        .update(changes);
     }
   } else if (answers.length) {
     await conn('quiz_users').insert({
@@ -127,7 +128,8 @@ const recalcQuizUser = async (quizId, createdBy, conn = db) => {
       quizze_id: quizId,
       created_by: createdBy,
       created_at: conn.fn.now(),
-      updated_at: conn.fn.now()
+      // kolom updated_at punya default CURRENT_TIMESTAMP, harus dikosongkan eksplisit
+      updated_at: null
     });
   }
 
