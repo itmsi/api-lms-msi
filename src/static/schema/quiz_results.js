@@ -80,7 +80,8 @@ const quizResultsSchemas = {
             quiz_answer_id: { type: 'string', format: 'uuid', nullable: true, description: 'quiz_answers.id, null jika user belum menjawab', example: '7d6c5b4a-3e2f-4a1b-9c8d-0e1f2a3b4c5d' },
             user_answer: { type: 'array', nullable: true, description: 'quiz_answers.answers, null jika user belum menjawab', items: { $ref: '#/components/schemas/QuizAnswerItem' }, example: answerItemExample },
             user_answer_file: { type: 'string', nullable: true, description: 'quiz_answers.files, null jika user belum menjawab atau tidak melampirkan file', example: null },
-            files: { type: 'string', nullable: true, description: 'quiz_answers.files (share link Nextcloud), null jika user belum menjawab atau tidak melampirkan file', example: null },
+            question_file: { type: 'string', nullable: true, description: 'quiz_questions.image (share link Nextcloud), null jika soal tidak punya gambar', example: null },
+            answer_file: { type: 'string', nullable: true, description: 'quiz_answers.files (share link Nextcloud), null jika user belum menjawab atau tidak melampirkan file', example: null },
             user_point: { type: 'integer', description: 'quiz_answers.admin_points, 0 jika user belum menjawab', example: 10 },
             answer_status: { type: 'string', enum: ['correct', 'incorrect'], nullable: true, description: 'quiz_answers.is_correct: true = correct, false = incorrect, null jika user belum menjawab', example: 'correct' }
           }
