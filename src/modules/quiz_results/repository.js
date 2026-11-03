@@ -119,7 +119,8 @@ const findQuestionAnswers = async (quizId, userId) => {
       "quiz_answers.id as quiz_answer_id",
       "quiz_answers.answers as user_answer",
       "quiz_answers.files as user_answer_file",
-      db.raw("COALESCE(quiz_answers.admin_points, 0) as user_point"),
+      // admin_points bisa bertipe varchar atau integer tergantung database, samakan dulu ke integer
+      db.raw("COALESCE(quiz_answers.admin_points::integer, 0) as user_point"),
       db.raw(
         `CASE WHEN quiz_answers.id IS NULL THEN NULL WHEN quiz_answers.is_correct THEN 'correct' ELSE 'incorrect' END as answer_status`,
       ),
