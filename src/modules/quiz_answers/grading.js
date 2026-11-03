@@ -47,18 +47,19 @@ const isAnswerCorrect = (options, answers) => {
 };
 
 /**
- * multiple_answers dinilai sebagian: poin = poin soal x jumlah opsi benar yang dipilih / jumlah semua opsi benar,
- * dibulatkan ke angka terdekat (0.5 ke atas). Jawaban dianggap benar jika minimal satu opsi benar dipilih.
- * Opsi salah yang ikut dipilih tidak mengurangi poin.
+ * multiple_answers dinilai sebagian: poin = poin soal x (jumlah opsi benar yang dipilih - jumlah opsi salah yang dipilih)
+ * / jumlah semua opsi benar, dibulatkan ke angka terdekat (0.5 ke atas), minimal 0.
+ * Jawaban dianggap benar jika minimal satu opsi benar dipilih.
  */
 const gradeMultipleAnswers = (question, answers) => {
   const correct = selectedLines(question.options);
   const chosen = selectedLines(answers);
   const hits = correct.filter((line) => chosen.includes(line)).length;
+  const wrongs = chosen.length - hits;
 
   return {
     isCorrect: hits > 0,
-    points: hits > 0 ? Math.round((question.points * hits) / correct.length) : 0
+    points: hits > wrongs ? Math.round((question.points * (hits - wrongs)) / correct.length) : 0
   };
 };
 
