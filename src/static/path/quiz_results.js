@@ -58,6 +58,20 @@ const quizResultsPaths = {
         404: errorResponse('Not found')
       }
     }
+  },
+  '/quiz_results/{id}/regrade': {
+    post: {
+      tags: ['Quiz Results'],
+      summary: 'Penilaian ulang hasil quiz',
+      description: 'id adalah quiz_users.id. Menilai ulang seluruh jawaban aktif user pada quiz ini, termasuk nilai yang sudah diubah admin. multiple_choice, multiple_answers & true_false langsung dinilai ulang. short_answer dikirim ulang ke API AI memakai Bearer token dari header request; lewat queue RabbitMQ dan hasilnya menyusul (ai_assessment_status: PENDING lalu SUCCESS / FAILED). Jika AI gagal nilai lama tetap dipertahankan. short_answer dengan jawaban kosong dilewati. updated_at & updated_by pada quiz_users tidak berubah.',
+      parameters: [idParam('quiz result')],
+      responses: {
+        ...authErrors,
+        200: { description: 'Success', content: json(envelope(ref('QuizResultRegradeResult'), 'Penilaian ulang diproses')) },
+        400: errorResponse('Validation error'),
+        404: errorResponse('Not found')
+      }
+    }
   }
 };
 

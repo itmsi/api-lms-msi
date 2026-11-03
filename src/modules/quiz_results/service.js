@@ -1,4 +1,5 @@
 const repository = require('./repository');
+const { joinTexts, assessShortAnswer } = require('../quiz_answers/ai_assessment');
 
 /**
  * Service Layer - Business Logic (quiz_results)
@@ -50,8 +51,42 @@ const updateAdminPoints = async (quizUserId, items, actorId) => {
   return data;
 };
 
+/**
+ * Penilaian ulang seluruh jawaban pada satu hasil quiz (id = quiz_users.id), termasuk nilai yang sudah diubah admin.
+ * Soal otomatis langsung dinilai; short_answer selalu dikirim ulang ke queue penilaian AI dan hasilnya menyusul.
+ * short_answer dengan jawaban kosong dilewati karena tidak ada yang dinilai.
+ */
+const regrade = async (quizUserId, authorization) => {
+  const data = await repository.findById(quizUserId);
+
+  if (!data) {
+    throw { message: 'Data tidak ditemukan', statusCode: 404 };
+  }
+
+  const answers = await repository.findAnswersToRegrade(data.quizze_id, data.created_by);
+  const autoAnswers = answers.filter((answer) => answer.type !== 'short_answer');
+  const aiAnswers = answers.filter((answer) => answer.type === 'short_answer' && joinTexts(answer.answers));
+
+  await repository.regradeAnswers(
+    data.quizze_id,
+    data.created_by,
+    autoAnswers.map((answer) => answer.quiz_question_id)
+  );
+
+  for (const answer of aiAnswers) {
+    await assessShortAnswer(answer.id, authorization, { keepPoints: true });
+  }
+
+  return {
+    quiz_result_id: quizUserId,
+    auto_graded_count: autoAnswers.length,
+    ai_assessment_count: aiAnswers.length
+  };
+};
+
 module.exports = {
   getAllItems,
   getItemById,
-  updateAdminPoints
+  updateAdminPoints,
+  regrade
 };

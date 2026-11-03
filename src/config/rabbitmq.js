@@ -38,7 +38,31 @@ const publishToRabbitMqQueueSingle = async (exchangeName, queueName, data) => {
   }
 }
 
+const isRabbitMqEnabled = () => process.env.RABBITMQ_ENABLED === 'true'
+  && Boolean(process.env.RABBITMQ_URL)
+  && process.env.RABBITMQ_URL !== 'disabled'
+
+/**
+ * Kirim pesan langsung ke queue durable. Pesan persistent dan ditunggu konfirmasinya dari broker,
+ * sehingga pesan tetap ada walau broker restart. Melempar error bila gagal agar pemanggil bisa menanganinya.
+ */
+const publishToQueue = async (queueName, data) => {
+  const { connection } = await connectRabbitMQ()
+  connection.on('error', (error) => console.error('RabbitMQ connection error:', error.message))
+
+  try {
+    const channel = await connection.createConfirmChannel()
+    await channel.assertQueue(queueName, { durable: true })
+    channel.sendToQueue(queueName, Buffer.from(JSON.stringify(data)), { persistent: true })
+    await channel.waitForConfirms()
+  } finally {
+    await connection.close()
+  }
+}
+
 module.exports = {
   connectRabbitMQ,
-  publishToRabbitMqQueueSingle
+  publishToRabbitMqQueueSingle,
+  isRabbitMqEnabled,
+  publishToQueue
 }

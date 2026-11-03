@@ -1,10 +1,12 @@
 const { logger, logDateFormat, fullDateFormat } = require('../utils')
 const { initEmailServices } = require('./email_listener')
+const { initAiAssessmentListener } = require('./ai_assessment_listener')
 
 const initListener = async () => {
   const fileName = `listener-${logDateFormat()}.txt`
   try {
     console.info('Listener is working waiting for message')
+    await initAiAssessmentListener()
     await initEmailServices()
     logger(fileName, 'listener').write(`Listener is working waiting for message ${fullDateFormat(new Date().toISOString())} \n`)
   } catch (error) {

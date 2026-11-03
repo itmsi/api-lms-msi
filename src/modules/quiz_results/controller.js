@@ -38,8 +38,19 @@ const updateAdminPoints = async (req, res) => {
   }
 };
 
+const regrade = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await service.regrade(id, req.headers.authorization);
+    return successResponse(res, data, 'Penilaian ulang diproses');
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 module.exports = {
   getAll,
   getById,
-  updateAdminPoints
+  updateAdminPoints,
+  regrade
 };

@@ -55,6 +55,14 @@ const quizResultsSchemas = {
       }
     }
   },
+  QuizResultRegradeResult: {
+    type: 'object',
+    properties: {
+      quiz_result_id: { type: 'string', format: 'uuid', description: 'quiz_users.id', example: '3c2b1a09-8f7e-4d6c-9b5a-4e3d2c1b0a99' },
+      auto_graded_count: { type: 'integer', description: 'Jumlah jawaban multiple_choice, multiple_answers & true_false yang sudah dinilai ulang', example: 3 },
+      ai_assessment_count: { type: 'integer', description: 'Jumlah jawaban short_answer yang dikirim ke queue penilaian AI, hasilnya menyusul', example: 1 }
+    }
+  },
   QuizResult: {
     type: 'object',
     description: 'Hasil pengerjaan quiz per user (quiz_users join quizzes & modules)',

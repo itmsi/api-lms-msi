@@ -1,6 +1,6 @@
 const { pgCore: db } = require("../../config/database");
 const { normalizeListParams } = require("../../utils/list_params");
-const { recalcQuizUser } = require("../quiz_answers/grading");
+const { recalcQuizUser, gradeAnswer } = require("../quiz_answers/grading");
 
 const TABLE_NAME = "quiz_users";
 const EMPLOYEE_TABLE = "gate_sso_employees";
@@ -209,9 +209,40 @@ const updateAdminPoints = async (quizUserId, items, actorId = null) => {
   });
 };
 
+// jawaban aktif user pada soal aktif quiz, dipakai untuk penilaian ulang
+const findAnswersToRegrade = async (quizId, userId) => {
+  return await db("quiz_answers")
+    .join("quiz_questions", "quiz_questions.id", "quiz_answers.quiz_question_id")
+    .where({
+      "quiz_questions.quizzes_id": quizId,
+      "quiz_questions.is_delete": false,
+      "quiz_answers.created_by": userId,
+      "quiz_answers.is_delete": false,
+    })
+    .select(
+      "quiz_answers.id",
+      "quiz_answers.quiz_question_id",
+      "quiz_answers.answers",
+      "quiz_questions.type",
+    );
+};
+
+// nilai ulang jawaban otomatis (non short_answer) dalam satu transaksi, lalu hitung ulang rekap quiz_users
+const regradeAnswers = async (quizId, userId, questionIds) => {
+  await db.transaction(async (trx) => {
+    for (const questionId of questionIds) {
+      await gradeAnswer(questionId, userId, trx);
+    }
+
+    await recalcQuizUser(quizId, userId, trx);
+  });
+};
+
 module.exports = {
   findAll,
   findById,
   findQuestionAnswers,
   updateAdminPoints,
+  findAnswersToRegrade,
+  regradeAnswers,
 };

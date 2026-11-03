@@ -86,7 +86,7 @@ const getItemById = async (id) => {
   return { ...data, answers };
 };
 
-const createItem = async (itemData, file, actorId) => {
+const createItem = async (itemData, file, actorId, authorization) => {
   // quizze_id diambil dari relasi soal (quiz_questions.quizzes_id)
   const question = await repository.findQuestion(itemData.quiz_question_id);
   if (!question) {
@@ -108,7 +108,7 @@ const createItem = async (itemData, file, actorId) => {
   const result = await repository.upsert(question.quizzes_id, answerData, actorId, itemData.send_date || null);
 
   if (isShortAnswer && needsAssessment(previous, itemData.answers)) {
-    await assessShortAnswer(result.quiz_answer.id);
+    await assessShortAnswer(result.quiz_answer.id, authorization);
   }
 
   return result;

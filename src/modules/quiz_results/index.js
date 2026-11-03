@@ -52,4 +52,17 @@ router.put(
   controller.updateAdminPoints,
 );
 
+/**
+ * @route   POST /api/lms/quiz_results/:id/regrade
+ * @desc    Penilaian ulang seluruh jawaban pada hasil quiz (id = quiz_users.id), short_answer dikirim ulang ke API AI
+ * @access  Protected (hak akses quiz-results.regrade)
+ */
+router.post(
+  "/:id/regrade",
+  authorize,
+  getByIdValidation,
+  validateMiddleware,
+  controller.regrade,
+);
+
 module.exports = router;

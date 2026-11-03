@@ -49,7 +49,7 @@ const getById = async (req, res) => {
 
 const create = async (req, res) => {
   try {
-    await service.createItem(req.body, req.file, req.user.id);
+    await service.createItem(req.body, req.file, req.user.id, req.headers.authorization);
     // hasil penilaian tidak dikirim agar peserta tidak tahu jawabannya benar atau salah
     return successResponse(res, null, 'Data berhasil disimpan', 201);
   } catch (error) {

@@ -153,6 +153,15 @@ permissions.push({
   description: "Lihat hasil pengerjaan Quiz user tertentu beserta seluruh soal dan jawabannya",
 });
 
+// Hak akses tambahan: penilaian ulang hasil quiz
+permissions.push({
+  code: "quiz-results.regrade",
+  name: "Penilaian ulang hasil Quiz",
+  method: "POST",
+  endpoint: `${API_PREFIX}/quiz_results/:id/regrade`,
+  description: "Menilai ulang seluruh jawaban pada hasil Quiz, short_answer dikirim ulang ke API AI",
+});
+
 // Hak akses tambahan: export log activity ke excel
 permissions.push({
   code: "log-activity.export",
