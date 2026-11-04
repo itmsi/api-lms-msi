@@ -62,7 +62,10 @@ const findAll = async (params = {}) => {
 
   const base = () => {
     const q = baseQuery().where("quiz_users.is_delete", false);
-    if (params.quizzes_id) q.andWhere("quiz_users.quizze_id", params.quizzes_id);
+    if (params.quizzes_id)
+      q.andWhere("quiz_users.quizze_id", params.quizzes_id);
+    if (params.employee_id)
+      q.andWhere("quiz_users.created_by", params.employee_id);
     if (params.status) q.andWhereRaw(`${STATUS_SQL} = ?`, [params.status]);
     if (search) {
       q.andWhere((b) =>
@@ -108,7 +111,10 @@ const findQuestionAnswers = async (quizId, userId) => {
         .andOn("quiz_answers.created_by", db.raw("?", [userId]))
         .andOn("quiz_answers.is_delete", db.raw("false"));
     })
-    .where({ "quiz_questions.quizzes_id": quizId, "quiz_questions.is_delete": false })
+    .where({
+      "quiz_questions.quizzes_id": quizId,
+      "quiz_questions.is_delete": false,
+    })
     .select(
       "quiz_questions.id as quiz_question_id",
       "quiz_questions.line",
@@ -144,7 +150,11 @@ const updateAdminPoints = async (quizUserId, items, actorId = null) => {
 
     const answerIds = items.map((item) => item.id);
     const owned = await trx("quiz_answers")
-      .join("quiz_questions", "quiz_questions.id", "quiz_answers.quiz_question_id")
+      .join(
+        "quiz_questions",
+        "quiz_questions.id",
+        "quiz_answers.quiz_question_id",
+      )
       .where({
         "quiz_questions.quizzes_id": quizUser.quizze_id,
         "quiz_questions.is_delete": false,
@@ -212,7 +222,11 @@ const updateAdminPoints = async (quizUserId, items, actorId = null) => {
 // jawaban aktif user pada soal aktif quiz, dipakai untuk penilaian ulang
 const findAnswersToRegrade = async (quizId, userId) => {
   return await db("quiz_answers")
-    .join("quiz_questions", "quiz_questions.id", "quiz_answers.quiz_question_id")
+    .join(
+      "quiz_questions",
+      "quiz_questions.id",
+      "quiz_answers.quiz_question_id",
+    )
     .where({
       "quiz_questions.quizzes_id": quizId,
       "quiz_questions.is_delete": false,
