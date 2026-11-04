@@ -132,6 +132,7 @@ const quizAnswersSchemas = {
       total_point: { type: 'string', nullable: true, description: 'quiz_users.total_point', example: '15' },
       completed_count: { type: 'string', nullable: true, description: 'quiz_users.completed_count', example: '2' },
       uncompleted_count: { type: 'string', nullable: true, description: 'quiz_users.uncompleted_count', example: '1' },
+      status_proses: { type: 'string', enum: ['PENDING', 'SUCCESS', 'FAILED'], nullable: true, description: 'quiz_users.status_proses: rekap quiz_answers.ai_assessment_status, FAILED bila ada yang FAILED, lalu PENDING bila ada yang PENDING, lalu SUCCESS (status null tidak dihitung). null jika belum mengerjakan atau tidak ada jawaban yang berstatus', example: 'PENDING' },
       created_at: { type: 'string', format: 'date-time', nullable: true, description: 'quiz_users.created_at (mulai mengerjakan)', example: '2026-11-03T08:00:00.000Z' },
       updated_at: { type: 'string', format: 'date-time', nullable: true, description: 'quiz_users.updated_at (terakhir dinilai admin), null jika belum dinilai', example: '2026-11-03T08:20:00.000Z' },
       questions: {

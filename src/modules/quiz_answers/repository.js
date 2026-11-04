@@ -416,6 +416,7 @@ const findResultQuiz = async (quizId, userId) => {
       "quiz_users.total_point",
       "quiz_users.completed_count",
       "quiz_users.uncompleted_count",
+      "quiz_users.status_proses",
       "quiz_users.created_at",
       "quiz_users.updated_at",
     );
