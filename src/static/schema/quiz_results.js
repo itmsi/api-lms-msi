@@ -11,6 +11,7 @@ const quizResultProps = {
   completed_count: { type: 'string', nullable: true, description: 'quiz_users.completed_count', example: '8' },
   uncompleted_count: { type: 'string', nullable: true, description: 'quiz_users.uncompleted_count', example: '2' },
   status: { type: 'string', enum: ['completed', 'uncompleted'], description: 'completed jika uncompleted_count = 0, selain itu uncompleted', example: 'uncompleted' },
+  status_proses: { type: 'string', enum: ['PENDING', 'SUCCESS', 'FAILED'], nullable: true, description: 'quiz_users.status_proses: rekap quiz_answers.ai_assessment_status, FAILED bila ada yang FAILED, lalu PENDING bila ada yang PENDING, lalu SUCCESS (status null tidak dihitung). null jika tidak ada jawaban yang berstatus', example: 'PENDING' },
   send_date: { type: 'string', format: 'date-time', nullable: true, description: 'quiz_users.send_date: waktu peserta mengirim jawaban terakhir, null jika belum dikirim', example: '2026-11-03T08:20:00.000Z' },
   updated_at: { type: 'string', format: 'date-time', nullable: true, description: 'quiz_users.updated_at', example: '2026-11-03T08:20:00.000Z' },
   total_point: { type: 'string', nullable: true, description: 'quiz_users.total_point', example: '80' },

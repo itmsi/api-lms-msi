@@ -12,6 +12,8 @@ const { pgCore: db } = require('../../config/database');
  * Semua fungsi menerima `conn` opsional (mis. trx) agar bisa ikut transaksi pemanggil.
  */
 
+const STATUS = { PENDING: 'PENDING', SUCCESS: 'SUCCESS', FAILED: 'FAILED' };
+
 const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
 // himpunan line (unik, terurut) dari item yang is_correct = true
@@ -75,6 +77,19 @@ const GRADERS = {
   true_false: gradeAllOrNothing
 };
 
+// status null (jawaban kosong / nilai dari admin) tidak dihitung karena tidak menunggu proses apa pun
+const toProcessStatus = (answers) => {
+  const statuses = answers.map((a) => a.ai_assessment_status);
+  return [STATUS.FAILED, STATUS.PENDING, STATUS.SUCCESS].find((status) => statuses.includes(status)) || null;
+};
+
+// rekap dihitung dari jawaban yang bisa berubah bersamaan (mis. hasil AI masuk saat peserta menjawab soal lain):
+// kunci quiz_users di awal transaksi agar penulisnya bergantian dan rekap tidak tertimpa nilai lama.
+const lockQuizUser = (quizId, createdBy, trx) => trx('quiz_users')
+  .where({ quizze_id: quizId, created_by: createdBy, is_delete: false })
+  .forUpdate()
+  .first('id');
+
 /**
  * Hitung ulang rekap quiz_users milik user pada sebuah quiz dari jawaban aktif user di soal-soal aktif quiz tsb:
  * - total_point       : jumlah admin_points
@@ -82,6 +97,7 @@ const GRADERS = {
  * - uncompleted_count : jumlah jawaban dengan answers kosong ([])
  * - total_correct_points  : jumlah admin_points
  * - total_possible_points : jumlah quiz_questions.points dari seluruh soal aktif quiz
+ * - status_proses     : rekap ai_assessment_status, FAILED bila ada yang FAILED, lalu PENDING bila ada yang PENDING, lalu SUCCESS
  * quiz_users dibuat bila belum ada (dan user punya jawaban); jika sudah ada hanya di-update bila nilainya berubah.
  * updated_at & updated_by quiz_users tidak diisi di sini: hanya diisi saat admin menilai (PUT /quiz_results/:id).
  */
@@ -94,7 +110,7 @@ const recalcQuizUser = async (quizId, createdBy, conn = db) => {
       'qa.created_by': createdBy,
       'qa.is_delete': false
     })
-    .select('qa.answers', 'qa.admin_points');
+    .select('qa.answers', 'qa.admin_points', 'qa.ai_assessment_status');
 
   const { total: possiblePoints } = await conn('quiz_questions')
     .where({ quizzes_id: quizId, is_delete: false })
@@ -107,7 +123,8 @@ const recalcQuizUser = async (quizId, createdBy, conn = db) => {
     completed_count: String(completed),
     uncompleted_count: String(answers.length - completed),
     total_correct_points: String(answers.reduce((sum, a) => sum + toNumber(a.admin_points), 0)),
-    total_possible_points: String(possiblePoints || 0)
+    total_possible_points: String(possiblePoints || 0),
+    status_proses: toProcessStatus(answers)
   };
 
   const existing = await conn('quiz_users')
@@ -179,17 +196,27 @@ const gradeAnswer = async (quizQuestionId, createdBy, conn = db) => {
  * dengan memanggil gradeAnswer per user yang menjawab soal tsb.
  */
 const regradeQuestion = async (quizQuestionId, conn = db) => {
+  const question = await conn('quiz_questions')
+    .where({ id: quizQuestionId })
+    .first('quizzes_id');
+  if (!question) return;
+
   const users = await conn('quiz_answers')
     .where({ quiz_question_id: quizQuestionId, is_delete: false })
     .distinct('created_by');
 
   for (const { created_by: createdBy } of users) {
-    await gradeAnswer(quizQuestionId, createdBy, conn);
+    await conn.transaction(async (trx) => {
+      await lockQuizUser(question.quizzes_id, createdBy, trx);
+      await gradeAnswer(quizQuestionId, createdBy, trx);
+    });
   }
 };
 
 module.exports = {
+  STATUS,
   isAnswerCorrect,
+  lockQuizUser,
   recalcQuizUser,
   gradeAnswer,
   regradeQuestion

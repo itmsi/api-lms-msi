@@ -2,7 +2,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const repository = require('./repository');
 const quizService = require('../quiz/service');
-const { findPreviousAnswer, needsAssessment, assessShortAnswer } = require('./ai_assessment');
+const { STATUS, findPreviousAnswer, needsAssessment, assessShortAnswer } = require('./ai_assessment');
 const {
   client,
   ensureDirectoryExists,
@@ -105,7 +105,16 @@ const createItem = async (itemData, file, actorId, authorization) => {
   const isShortAnswer = question.type === 'short_answer';
   const previous = isShortAnswer ? await findPreviousAnswer(question.id, actorId) : null;
 
-  const result = await repository.upsert(question.quizzes_id, answerData, actorId, itemData.send_date || null);
+  // jawaban baru: short_answer menunggu hasil AI, tipe soal lain langsung selesai dinilai
+  const aiAssessmentStatus = isShortAnswer ? STATUS.PENDING : STATUS.SUCCESS;
+
+  const result = await repository.upsert(
+    question.quizzes_id,
+    answerData,
+    actorId,
+    itemData.send_date || null,
+    aiAssessmentStatus
+  );
 
   if (isShortAnswer && needsAssessment(previous, itemData.answers)) {
     await assessShortAnswer(result.quiz_answer.id, authorization);

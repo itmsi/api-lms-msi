@@ -1,7 +1,7 @@
 const axios = require('axios');
 const { pgCore: db } = require('../../config/database');
 const { isRabbitMqEnabled, publishToQueue } = require('../../config/rabbitmq');
-const { recalcQuizUser } = require('./grading');
+const { STATUS, lockQuizUser, recalcQuizUser } = require('./grading');
 
 /**
  * Penilaian jawaban short_answer lewat API AI (POST /api/mosa/answer-grading/grade), diproses lewat RabbitMQ.
@@ -14,7 +14,6 @@ const { recalcQuizUser } = require('./grading');
  * Token tidak disimpan ke database dan isi pesan tidak boleh ditulis ke log.
  */
 
-const STATUS = { PENDING: 'PENDING', SUCCESS: 'SUCCESS', FAILED: 'FAILED' };
 const REQUEST_TIMEOUT_MS = 60000;
 const AI_ASSESSMENT_QUEUE = 'quiz-ai-assessment';
 
@@ -55,23 +54,23 @@ const findContext = async (answerId) => {
     );
 };
 
-// hasil AI bisa selesai bersamaan: rekap quiz_users dikunci agar perhitungan berjalan bergantian dan tidak saling menimpa
-const lockQuizUser = (context, trx) => trx('quiz_users')
-  .where({ quizze_id: context.quizzes_id, created_by: context.created_by, is_delete: false })
-  .forUpdate()
-  .first('id');
-
 // penilaian ulang: nilai lama dipertahankan sampai AI berhasil, agar kegagalan AI tidak menghapus nilai yang sudah ada
 const markPending = async (context) => {
-  await db('quiz_answers')
-    .where({ id: context.id })
-    .update({ ai_assessment_status: STATUS.PENDING, ai_assessment_message: null });
+  await db.transaction(async (trx) => {
+    await lockQuizUser(context.quizzes_id, context.created_by, trx);
+
+    await trx('quiz_answers')
+      .where({ id: context.id })
+      .update({ ai_assessment_status: STATUS.PENDING, ai_assessment_message: null });
+
+    await recalcQuizUser(context.quizzes_id, context.created_by, trx);
+  });
 };
 
 // nilai lama dikosongkan karena tidak berlaku untuk jawaban yang baru; status PENDING / null (jawaban kosong)
 const resetAssessment = async (context, status) => {
   await db.transaction(async (trx) => {
-    await lockQuizUser(context, trx);
+    await lockQuizUser(context.quizzes_id, context.created_by, trx);
 
     await trx('quiz_answers')
       .where({ id: context.id })
@@ -140,7 +139,7 @@ const requestGrade = async (context, authorization) => {
  */
 const saveResult = async (context, { status, message, score }) => {
   await db.transaction(async (trx) => {
-    await lockQuizUser(context, trx);
+    await lockQuizUser(context.quizzes_id, context.created_by, trx);
 
     const graded = status === STATUS.SUCCESS
       ? { points: score, admin_points: String(score), is_correct: score > 0 }
@@ -156,7 +155,7 @@ const saveResult = async (context, { status, message, score }) => {
         ai_assessment_message: JSON.stringify(message)
       });
 
-    if (updated && status === STATUS.SUCCESS) {
+    if (updated) {
       await recalcQuizUser(context.quizzes_id, context.created_by, trx);
     }
   });

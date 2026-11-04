@@ -1,6 +1,6 @@
 const { pgCore: db } = require("../../config/database");
 const { normalizeListParams } = require("../../utils/list_params");
-const { gradeAnswer } = require("./grading");
+const { gradeAnswer, lockQuizUser } = require("./grading");
 
 const TABLE_NAME = "quiz_users";
 const ANSWER_TABLE = "quiz_answers";
@@ -208,9 +208,12 @@ const findAnswerById = async (id, conn = db) => {
  * jika sudah ada di-update, jika belum dibuat baru. Setelah itu jawaban dinilai dan rekap quiz_users
  * dihitung ulang lewat gradeAnswer (lihat grading.js), lalu quiz_answers.quiz_user_id diisi.
  * sendDate terisi berarti ini jawaban terakhir yang dikirim: nilainya disimpan ke quiz_users.send_date.
+ * aiAssessmentStatus hanya dipakai saat jawaban dibuat baru; jawaban yang sudah ada tetap memakai statusnya.
  */
-const upsert = async (quizId, answerData, actorId = null, sendDate = null) => {
+const upsert = async (quizId, answerData, actorId = null, sendDate = null, aiAssessmentStatus = null) => {
   return await db.transaction(async (trx) => {
+    await lockQuizUser(quizId, actorId, trx);
+
     const existingAnswer = await trx(ANSWER_TABLE)
       .where({
         quiz_question_id: answerData.quiz_question_id,
@@ -233,6 +236,7 @@ const upsert = async (quizId, answerData, actorId = null, sendDate = null) => {
       const [created] = await trx(ANSWER_TABLE)
         .insert({
           ...answerData,
+          ai_assessment_status: aiAssessmentStatus,
           created_by: actorId,
           created_at: trx.fn.now(),
           updated_at: trx.fn.now(),

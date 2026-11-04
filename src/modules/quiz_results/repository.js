@@ -1,6 +1,10 @@
 const { pgCore: db } = require("../../config/database");
 const { normalizeListParams } = require("../../utils/list_params");
-const { recalcQuizUser, gradeAnswer } = require("../quiz_answers/grading");
+const {
+  recalcQuizUser,
+  gradeAnswer,
+  lockQuizUser,
+} = require("../quiz_answers/grading");
 
 const TABLE_NAME = "quiz_users";
 const EMPLOYEE_TABLE = "gate_sso_employees";
@@ -36,6 +40,7 @@ const COLUMNS = [
   "quiz_users.completed_count",
   "quiz_users.uncompleted_count",
   db.raw(`${STATUS_SQL} as status`),
+  "quiz_users.status_proses",
   "quiz_users.send_date",
   "quiz_users.updated_at",
   "quiz_users.total_point",
@@ -145,6 +150,7 @@ const updateAdminPoints = async (quizUserId, items, actorId = null) => {
   return await db.transaction(async (trx) => {
     const quizUser = await trx(TABLE_NAME)
       .where({ id: quizUserId, is_delete: false })
+      .forUpdate()
       .first("quizze_id", "created_by");
     if (!quizUser) return null;
 
@@ -244,6 +250,8 @@ const findAnswersToRegrade = async (quizId, userId) => {
 // nilai ulang jawaban otomatis (non short_answer) dalam satu transaksi, lalu hitung ulang rekap quiz_users
 const regradeAnswers = async (quizId, userId, questionIds) => {
   await db.transaction(async (trx) => {
+    await lockQuizUser(quizId, userId, trx);
+
     for (const questionId of questionIds) {
       await gradeAnswer(questionId, userId, trx);
     }
